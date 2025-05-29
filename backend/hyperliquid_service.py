@@ -52,7 +52,7 @@ class HyperliquidService:
         
         try:
             # Get user state from Hyperliquid
-            user_state = self.info.user_state(self.exchange.wallet.address)
+            user_state = self.info.user_state(self.wallet_address)
             
             portfolio = Portfolio(
                 account_value=float(user_state.get("marginSummary", {}).get("accountValue", 0)),
