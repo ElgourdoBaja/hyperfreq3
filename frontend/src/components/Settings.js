@@ -30,6 +30,7 @@ const Settings = () => {
       if (response.data.success) {
         setSettings(response.data.data);
         setFormData({
+          wallet_address: response.data.data.api_credentials?.wallet_address || '',
           private_key: response.data.data.api_credentials?.private_key || '',
           environment: response.data.data.api_credentials?.environment || 'testnet'
         });
