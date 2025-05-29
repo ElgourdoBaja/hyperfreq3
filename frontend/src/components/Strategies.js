@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Brain, Plus, Play, Pause, Stop, Edit, Trash2, TrendingUp, AlertCircle } from 'lucide-react';
+import { Brain, Plus, Play, Pause, Square, Edit, Trash2, TrendingUp, AlertCircle } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 
 const Strategies = () => {
