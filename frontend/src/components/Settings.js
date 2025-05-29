@@ -258,6 +258,23 @@ const Settings = () => {
               </p>
             </div>
 
+            {/* Wallet Address */}
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Main Wallet Address (Public Key)
+              </label>
+              <input
+                type="text"
+                value={formData.wallet_address}
+                onChange={(e) => setFormData(prev => ({ ...prev, wallet_address: e.target.value }))}
+                className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-blue-400"
+                placeholder="0x1234567890abcdef1234567890abcdef12345678"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Your main wallet address from Hyperliquid (not the API wallet address).
+              </p>
+            </div>
+
             {/* Private Key */}
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">
