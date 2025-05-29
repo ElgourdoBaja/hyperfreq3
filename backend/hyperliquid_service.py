@@ -177,23 +177,44 @@ class HyperliquidService:
             return self._generate_mock_candlestick_data(coin, limit)
     
     async def get_order_book(self, coin: str) -> OrderBook:
-        """Get order book for a coin"""
-        if not self.is_configured:
-            return self._generate_mock_order_book(coin)
-        
+        """Get real order book for a coin from Hyperliquid API"""
         try:
-            l2_book = self.info.l2_snapshot(coin)
+            # Always fetch real order book data from Hyperliquid public API
+            import requests
             
-            bids = [OrderBookLevel(price=float(level["px"]), size=float(level["sz"])) 
-                   for level in l2_book.get("levels", [])[::-1] if level.get("n") > 0]
-            asks = [OrderBookLevel(price=float(level["px"]), size=float(level["sz"])) 
-                   for level in l2_book.get("levels", []) if level.get("n") < 0]
+            orderbook_response = requests.post(
+                "https://api.hyperliquid.xyz/info",
+                json={"type": "l2Book", "coin": coin},
+                headers={"Content-Type": "application/json"}
+            )
             
-            return OrderBook(coin=coin, bids=bids, asks=asks)
+            if orderbook_response.status_code == 200:
+                l2_book = orderbook_response.json()
+                
+                bids = []
+                asks = []
+                
+                # Parse the order book levels
+                for level in l2_book.get("levels", []):
+                    price = float(level["px"])
+                    size = abs(float(level["sz"]))
+                    
+                    if float(level["n"]) > 0:  # Positive n means ask
+                        asks.append(OrderBookLevel(price=price, size=size))
+                    else:  # Negative n means bid
+                        bids.append(OrderBookLevel(price=price, size=size))
+                
+                # Sort bids (highest first) and asks (lowest first)
+                bids.sort(key=lambda x: x.price, reverse=True)
+                asks.sort(key=lambda x: x.price)
+                
+                return OrderBook(coin=coin, bids=bids[:20], asks=asks[:20])  # Limit to top 20 levels
+            
+            raise Exception(f"Could not fetch real order book for {coin}")
             
         except Exception as e:
-            print(f"Error fetching order book: {e}")
-            return self._generate_mock_order_book(coin)
+            print(f"Error fetching real order book for {coin}: {e}")
+            raise Exception(f"Failed to fetch real order book: {str(e)}")
     
     async def place_order(self, coin: str, is_buy: bool, size: float, price: Optional[float] = None, 
                          order_type: OrderType = OrderType.LIMIT, reduce_only: bool = False) -> Order:
