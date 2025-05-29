@@ -415,30 +415,81 @@ async def send_portfolio_updates(websocket: WebSocket):
         except:
             break
 
-# Available coins endpoint
 @app.get("/api/coins", response_model=APIResponse)
 async def get_available_coins():
-    """Get list of available coins for trading"""
+    """Get list of available coins for trading from real Hyperliquid API"""
     try:
-        # Common coins supported by Hyperliquid
-        coins = [
-            {"symbol": "BTC", "name": "Bitcoin"},
-            {"symbol": "ETH", "name": "Ethereum"},
-            {"symbol": "SOL", "name": "Solana"},
-            {"symbol": "AVAX", "name": "Avalanche"},
-            {"symbol": "MATIC", "name": "Polygon"},
-            {"symbol": "LINK", "name": "Chainlink"},
-            {"symbol": "UNI", "name": "Uniswap"},
-            {"symbol": "AAVE", "name": "Aave"},
+        import requests
+        
+        # Get real coin list from Hyperliquid meta endpoint
+        meta_response = requests.post(
+            "https://api.hyperliquid.xyz/info",
+            json={"type": "meta"},
+            headers={"Content-Type": "application/json"}
+        )
+        
+        if meta_response.status_code == 200:
+            meta_data = meta_response.json()
+            
+            coins = []
+            for universe_item in meta_data.get("universe", []):
+                coin_name = universe_item.get("name", "")
+                if coin_name and not universe_item.get("isDelisted", False):
+                    # Add display name based on common knowledge
+                    display_names = {
+                        "BTC": "Bitcoin",
+                        "ETH": "Ethereum", 
+                        "SOL": "Solana",
+                        "AVAX": "Avalanche",
+                        "MATIC": "Polygon",
+                        "LINK": "Chainlink",
+                        "UNI": "Uniswap",
+                        "AAVE": "Aave",
+                        "ATOM": "Cosmos",
+                        "DOT": "Polkadot",
+                        "ADA": "Cardano",
+                        "NEAR": "Near Protocol",
+                        "FIL": "Filecoin",
+                        "DOGE": "Dogecoin",
+                        "LTC": "Litecoin"
+                    }
+                    
+                    coins.append({
+                        "symbol": coin_name,
+                        "name": display_names.get(coin_name, coin_name),
+                        "maxLeverage": universe_item.get("maxLeverage", 1)
+                    })
+            
+            # Sort by symbol for better UX
+            coins.sort(key=lambda x: x["symbol"])
+            
+            return APIResponse(
+                success=True,
+                message="Available coins retrieved successfully",
+                data=coins
+            )
+        
+        raise Exception("Could not fetch real coin list")
+        
+    except Exception as e:
+        print(f"Error fetching real coin list: {e}")
+        # Fallback to a basic list of major coins
+        fallback_coins = [
+            {"symbol": "BTC", "name": "Bitcoin", "maxLeverage": 40},
+            {"symbol": "ETH", "name": "Ethereum", "maxLeverage": 25},
+            {"symbol": "SOL", "name": "Solana", "maxLeverage": 20},
+            {"symbol": "AVAX", "name": "Avalanche", "maxLeverage": 10},
+            {"symbol": "LINK", "name": "Chainlink", "maxLeverage": 10},
+            {"symbol": "UNI", "name": "Uniswap", "maxLeverage": 10},
+            {"symbol": "AAVE", "name": "Aave", "maxLeverage": 10},
+            {"symbol": "ATOM", "name": "Cosmos", "maxLeverage": 5},
         ]
         
         return APIResponse(
             success=True,
-            message="Available coins retrieved successfully",
-            data=coins
+            message="Available coins retrieved successfully (fallback)",
+            data=fallback_coins
         )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
