@@ -321,8 +321,11 @@ async def update_settings(settings: UserSettings):
         )
         
         # Update environment variables if API credentials changed
-        if settings.api_credentials.private_key:
-            os.environ["HYPERLIQUID_PRIVATE_KEY"] = settings.api_credentials.private_key
+        if settings.api_credentials.wallet_address or settings.api_credentials.private_key:
+            if settings.api_credentials.wallet_address:
+                os.environ["HYPERLIQUID_WALLET_ADDRESS"] = settings.api_credentials.wallet_address
+            if settings.api_credentials.private_key:
+                os.environ["HYPERLIQUID_PRIVATE_KEY"] = settings.api_credentials.private_key
             os.environ["HYPERLIQUID_ENV"] = settings.api_credentials.environment
             
             # Reinitialize service
