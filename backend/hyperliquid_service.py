@@ -255,15 +255,20 @@ class HyperliquidService:
                 bids = []
                 asks = []
                 
-                # Parse the order book levels
-                for level in l2_book.get("levels", []):
-                    price = float(level["px"])
-                    size = abs(float(level["sz"]))
-                    
-                    if float(level["n"]) > 0:  # Positive n means ask
-                        asks.append(OrderBookLevel(price=price, size=size))
-                    else:  # Negative n means bid
+                # The levels array has two sub-arrays: [bids, asks]
+                levels = l2_book.get("levels", [])
+                if len(levels) >= 2:
+                    # First array is bids (index 0)
+                    for level in levels[0]:
+                        price = float(level["px"])
+                        size = float(level["sz"])
                         bids.append(OrderBookLevel(price=price, size=size))
+                    
+                    # Second array is asks (index 1)  
+                    for level in levels[1]:
+                        price = float(level["px"])
+                        size = float(level["sz"])
+                        asks.append(OrderBookLevel(price=price, size=size))
                 
                 # Sort bids (highest first) and asks (lowest first)
                 bids.sort(key=lambda x: x.price, reverse=True)
