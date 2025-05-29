@@ -19,9 +19,11 @@ from models import (
 
 class HyperliquidService:
     def __init__(self):
+        self.wallet_address = os.getenv("HYPERLIQUID_WALLET_ADDRESS", "")
         self.private_key = os.getenv("HYPERLIQUID_PRIVATE_KEY", "")
         self.environment = os.getenv("HYPERLIQUID_ENV", "testnet")
-        self.is_configured = bool(self.private_key and self.private_key != "")
+        self.is_configured = bool(self.wallet_address and self.private_key and 
+                                self.wallet_address != "" and self.private_key != "")
         
         # Initialize API clients
         if self.is_configured:
