@@ -12,8 +12,8 @@ class HypertraderAPITester:
         self.tests_passed = 0
         self.test_results = []
 
-    def run_test(self, name, method, endpoint, expected_status=200, data=None, params=None):
-        """Run a single API test"""
+    def run_test(self, name, method, endpoint, expected_status=200, data=None, params=None, validation_func=None):
+        """Run a single API test with optional validation function"""
         url = f"{self.base_url}/{endpoint}"
         headers = {'Content-Type': 'application/json'}
         
@@ -30,7 +30,21 @@ class HypertraderAPITester:
             elif method == 'DELETE':
                 response = requests.delete(url, headers=headers)
 
-            success = response.status_code == expected_status
+            status_success = response.status_code == expected_status
+            
+            # Try to parse JSON response
+            try:
+                response_data = response.json() if response.status_code != 204 else {}
+            except:
+                response_data = {"error": "Could not parse JSON response"}
+            
+            # Run validation function if provided
+            validation_success = True
+            validation_message = ""
+            if status_success and validation_func and response.status_code != 204:
+                validation_success, validation_message = validation_func(response_data)
+            
+            success = status_success and validation_success
             
             result = {
                 "name": name,
@@ -44,17 +58,22 @@ class HypertraderAPITester:
             if success:
                 self.tests_passed += 1
                 print(f"✅ Passed - Status: {response.status_code}")
-                if response.status_code != 204:  # No content
-                    result["response"] = response.json()
+                if validation_message:
+                    print(f"   {validation_message}")
+                if response.status_code != 204:
+                    result["response"] = response_data
             else:
-                print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
+                if not status_success:
+                    print(f"❌ Failed - Expected status {expected_status}, got {response.status_code}")
+                if not validation_success:
+                    print(f"❌ Failed - {validation_message}")
                 try:
-                    result["error"] = response.json()
+                    result["error"] = response_data
                 except:
                     result["error"] = response.text
 
             self.test_results.append(result)
-            return success, response.json() if success and response.status_code != 204 else {}
+            return success, response_data if success else {}
 
         except Exception as e:
             print(f"❌ Failed - Error: {str(e)}")
