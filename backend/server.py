@@ -14,12 +14,16 @@ from datetime import datetime
 load_dotenv()
 
 # Import models and services
-from .models import (
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from models import (
     Portfolio, Position, Order, Trade, MarketData, CandlestickData, 
     OrderBook, Account, Strategy, UserSettings, APICredentials,
     OrderRequest, APIResponse, OrderType, OrderSide, OrderStatus
 )
-from .hyperliquid_service import hyperliquid_service
+from hyperliquid_service import hyperliquid_service
 
 app = FastAPI(title="Hypertrader 1.5 API", version="1.5.0")
 
