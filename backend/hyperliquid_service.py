@@ -9,6 +9,8 @@ from hyperliquid.exchange import Exchange
 from hyperliquid.utils import constants
 import random
 import uuid
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from models import (
     Portfolio, Position, Order, Trade, MarketData, 
     CandlestickData, OrderBook, OrderBookLevel, Account,
