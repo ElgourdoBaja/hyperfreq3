@@ -6,7 +6,8 @@ import {
   Wallet, 
   Brain, 
   Settings as SettingsIcon,
-  PieChart
+  PieChart,
+  List
 } from 'lucide-react';
 
 const Navigation = () => {
@@ -15,6 +16,7 @@ const Navigation = () => {
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: PieChart, path: '/dashboard' },
+    { id: 'markets', label: 'Markets', icon: List, path: '/markets' },
     { id: 'trading', label: 'Trading', icon: TrendingUp, path: '/trading' },
     { id: 'portfolio', label: 'Portfolio', icon: Wallet, path: '/portfolio' },
     { id: 'strategies', label: 'Strategies', icon: Brain, path: '/strategies' },
