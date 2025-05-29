@@ -13,6 +13,7 @@ const Settings = () => {
   const [showPrivateKey, setShowPrivateKey] = useState(false);
   
   const [formData, setFormData] = useState({
+    wallet_address: '',
     private_key: '',
     environment: 'testnet'
   });
