@@ -182,7 +182,7 @@ const Strategies = () => {
       case 'paused':
         return <Pause size={16} />;
       case 'stopped':
-        return <Stop size={16} />;
+        return <Square size={16} />;
       default:
         return null;
     }
