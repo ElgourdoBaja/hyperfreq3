@@ -147,8 +147,9 @@ class Account(BaseModel):
 
 # Settings Models
 class APICredentials(BaseModel):
-    private_key: Optional[str] = None
-    environment: str = "testnet"  # testnet or mainnet
+    wallet_address: Optional[str] = None  # Main wallet address (public key)
+    private_key: Optional[str] = None     # API wallet private key
+    environment: str = "testnet"          # testnet or mainnet
     is_configured: bool = False
 
 class UserSettings(BaseModel):
