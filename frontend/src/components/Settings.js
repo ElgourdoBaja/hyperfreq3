@@ -278,7 +278,7 @@ const Settings = () => {
             {/* Private Key */}
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">
-                Private Key
+                API Wallet Private Key
               </label>
               <div className="relative">
                 <input
@@ -286,7 +286,7 @@ const Settings = () => {
                   value={formData.private_key}
                   onChange={(e) => setFormData(prev => ({ ...prev, private_key: e.target.value }))}
                   className="w-full bg-gray-700 text-white px-3 py-2 pr-10 rounded border border-gray-600 focus:outline-none focus:border-blue-400"
-                  placeholder="Enter your Hyperliquid private key"
+                  placeholder="Enter your API wallet private key"
                 />
                 <button
                   type="button"
@@ -297,7 +297,7 @@ const Settings = () => {
                 </button>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Your private key is stored securely and encrypted.
+                The private key from your generated API wallet (not your main wallet private key).
               </p>
             </div>
 
