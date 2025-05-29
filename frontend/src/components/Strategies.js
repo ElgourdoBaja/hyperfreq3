@@ -298,7 +298,7 @@ const Strategies = () => {
                       className="p-2 bg-red-600 hover:bg-red-700 rounded text-white transition-colors"
                       title="Stop Strategy"
                     >
-                      <Stop size={16} />
+                      <Square size={16} />
                     </button>
                   )}
                 </div>
