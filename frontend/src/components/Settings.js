@@ -98,7 +98,8 @@ const Settings = () => {
       setMessage(null);
 
       // First save the settings if they've changed
-      if (formData.private_key !== settings?.api_credentials?.private_key ||
+      if (formData.wallet_address !== settings?.api_credentials?.wallet_address ||
+          formData.private_key !== settings?.api_credentials?.private_key ||
           formData.environment !== settings?.api_credentials?.environment) {
         await handleSaveSettings({ preventDefault: () => {} });
         await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for settings to be applied
