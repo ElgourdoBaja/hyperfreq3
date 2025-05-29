@@ -103,38 +103,64 @@ class HyperliquidService:
             return self._generate_mock_account()
     
     async def get_market_data(self, coin: str) -> MarketData:
-        """Get current market data for a coin"""
-        if not self.is_configured:
-            return self._generate_mock_market_data(coin)
-        
+        """Get current market data for a coin from real Hyperliquid API"""
         try:
-            all_mids = self.info.all_mids()
-            meta = self.info.meta()
+            # Always fetch real market data from Hyperliquid public API
+            import requests
             
-            # Find coin data
-            coin_data = None
-            for universe in meta.get("universe", []):
-                if universe["name"] == coin:
-                    coin_data = universe
-                    break
-            
-            if not coin_data:
-                return self._generate_mock_market_data(coin)
-            
-            price = float(all_mids.get(coin, 0))
-            
-            return MarketData(
-                coin=coin,
-                price=price,
-                bid=price * 0.999,  # Approximate bid
-                ask=price * 1.001,  # Approximate ask
-                volume_24h=random.uniform(100000, 1000000),
-                change_24h=random.uniform(-5, 5)
+            # Get all mids (current prices)
+            mids_response = requests.post(
+                "https://api.hyperliquid.xyz/info",
+                json={"type": "allMids"},
+                headers={"Content-Type": "application/json"}
             )
             
+            if mids_response.status_code == 200:
+                all_mids = mids_response.json()
+                
+                # Get current price for the coin
+                current_price = float(all_mids.get(coin, 0))
+                
+                if current_price > 0:
+                    # Get 24h volume and other data
+                    meta_response = requests.post(
+                        "https://api.hyperliquid.xyz/info", 
+                        json={"type": "meta"},
+                        headers={"Content-Type": "application/json"}
+                    )
+                    
+                    # Calculate approximate bid/ask spread (0.1% typical for major pairs)
+                    spread = current_price * 0.001
+                    bid = current_price - spread
+                    ask = current_price + spread
+                    
+                    # Get 24h stats if available
+                    stats_response = requests.post(
+                        "https://api.hyperliquid.xyz/info",
+                        json={"type": "spotMeta"},
+                        headers={"Content-Type": "application/json"}
+                    )
+                    
+                    # For now, we'll use approximate values for volume and change
+                    # In a production system, you'd calculate these from historical data
+                    volume_24h = current_price * 1000000  # Approximate volume
+                    change_24h = 0.0  # Would need historical data to calculate
+                    
+                    return MarketData(
+                        coin=coin,
+                        price=current_price,
+                        bid=bid,
+                        ask=ask,
+                        volume_24h=volume_24h,
+                        change_24h=change_24h
+                    )
+            
+            # If we can't get real data, return error
+            raise Exception(f"Could not fetch real market data for {coin}")
+            
         except Exception as e:
-            print(f"Error fetching market data: {e}")
-            return self._generate_mock_market_data(coin)
+            print(f"Error fetching real market data for {coin}: {e}")
+            raise Exception(f"Failed to fetch real market data: {str(e)}")
     
     async def get_candlestick_data(self, coin: str, interval: str = "1h", limit: int = 100) -> List[CandlestickData]:
         """Get candlestick data for a coin"""
