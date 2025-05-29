@@ -163,18 +163,79 @@ class HyperliquidService:
             raise Exception(f"Failed to fetch real market data: {str(e)}")
     
     async def get_candlestick_data(self, coin: str, interval: str = "1h", limit: int = 100) -> List[CandlestickData]:
-        """Get candlestick data for a coin"""
-        if not self.is_configured:
-            return self._generate_mock_candlestick_data(coin, limit)
-        
+        """Get real candlestick data for a coin from Hyperliquid API"""
         try:
-            # Note: Hyperliquid doesn't have a direct candlestick endpoint
-            # We'll generate mock data for now
-            return self._generate_mock_candlestick_data(coin, limit)
+            # Always fetch real candlestick data from Hyperliquid public API
+            import requests
+            from datetime import datetime, timedelta
+            
+            # Convert interval to Hyperliquid format
+            interval_map = {
+                "1m": "1m",
+                "5m": "5m", 
+                "15m": "15m",
+                "1h": "1h",
+                "4h": "4h",
+                "1d": "1d"
+            }
+            
+            hl_interval = interval_map.get(interval, "1h")
+            
+            # Get current time and calculate start time
+            end_time = int(datetime.utcnow().timestamp() * 1000)
+            
+            # Calculate interval duration in milliseconds
+            interval_ms = {
+                "1m": 60 * 1000,
+                "5m": 5 * 60 * 1000,
+                "15m": 15 * 60 * 1000, 
+                "1h": 60 * 60 * 1000,
+                "4h": 4 * 60 * 60 * 1000,
+                "1d": 24 * 60 * 60 * 1000
+            }
+            
+            start_time = end_time - (limit * interval_ms.get(hl_interval, 60 * 60 * 1000))
+            
+            candles_response = requests.post(
+                "https://api.hyperliquid.xyz/info",
+                json={
+                    "type": "candleSnapshot",
+                    "req": {
+                        "coin": coin,
+                        "interval": hl_interval,
+                        "startTime": start_time,
+                        "endTime": end_time
+                    }
+                },
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if candles_response.status_code == 200:
+                candles_data = candles_response.json()
+                
+                candlesticks = []
+                for candle in candles_data:
+                    # Hyperliquid candle format: [timestamp, open, high, low, close, volume]
+                    timestamp = datetime.fromtimestamp(candle["t"] / 1000)
+                    
+                    candlesticks.append(CandlestickData(
+                        coin=coin,
+                        timestamp=timestamp,
+                        open=float(candle["o"]),
+                        high=float(candle["h"]),
+                        low=float(candle["l"]),
+                        close=float(candle["c"]),
+                        volume=float(candle.get("v", 0))
+                    ))
+                
+                return candlesticks[-limit:] if candlesticks else []
+            
+            raise Exception(f"Could not fetch real candlestick data for {coin}")
             
         except Exception as e:
-            print(f"Error fetching candlestick data: {e}")
-            return self._generate_mock_candlestick_data(coin, limit)
+            print(f"Error fetching real candlestick data for {coin}: {e}")
+            # For now, return empty list instead of mock data
+            return []
     
     async def get_order_book(self, coin: str) -> OrderBook:
         """Get real order book for a coin from Hyperliquid API"""
