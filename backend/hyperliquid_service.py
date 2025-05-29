@@ -88,10 +88,10 @@ class HyperliquidService:
             return self._generate_mock_account()
         
         try:
-            user_state = self.info.user_state(self.exchange.wallet.address)
+            user_state = self.info.user_state(self.wallet_address)
             
             return Account(
-                address=self.exchange.wallet.address,
+                address=self.wallet_address,
                 account_value=float(user_state.get("marginSummary", {}).get("accountValue", 0)),
                 margin_summary=user_state.get("marginSummary", {}),
                 cross_margin_summary=user_state.get("crossMarginSummary", {}),
