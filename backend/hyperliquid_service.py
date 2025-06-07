@@ -49,9 +49,11 @@ class HyperliquidService:
     async def get_portfolio(self) -> Portfolio:
         """Get user portfolio with positions and account value"""
         if not self.is_configured:
+            print("Portfolio: Using mock data - API not configured")
             return self._generate_mock_portfolio()
         
         try:
+            print("Portfolio: Using real Hyperliquid API data")
             # Get user state from Hyperliquid
             user_state = self.info.user_state(self.wallet_address)
             
@@ -77,21 +79,25 @@ class HyperliquidService:
                     positions.append(position)
             
             portfolio.positions = positions
+            print(f"Portfolio: Loaded {len(positions)} positions, Account Value: ${portfolio.account_value}")
             return portfolio
             
         except Exception as e:
-            print(f"Error fetching portfolio: {e}")
+            print(f"Error fetching real portfolio: {e}")
+            print("Portfolio: Falling back to mock data")
             return self._generate_mock_portfolio()
     
     async def get_account_info(self) -> Account:
         """Get account information"""
         if not self.is_configured:
+            print("Account: Using mock data - API not configured")
             return self._generate_mock_account()
         
         try:
+            print("Account: Using real Hyperliquid API data")
             user_state = self.info.user_state(self.wallet_address)
             
-            return Account(
+            account = Account(
                 address=self.wallet_address,
                 account_value=float(user_state.get("marginSummary", {}).get("accountValue", 0)),
                 margin_summary=user_state.get("marginSummary", {}),
@@ -99,8 +105,12 @@ class HyperliquidService:
                 withdrawable=float(user_state.get("withdrawable", 0))
             )
             
+            print(f"Account: Address {account.address[:8]}..., Account Value: ${account.account_value}")
+            return account
+            
         except Exception as e:
-            print(f"Error fetching account info: {e}")
+            print(f"Error fetching real account info: {e}")
+            print("Account: Falling back to mock data")
             return self._generate_mock_account()
     
     async def get_market_data(self, coin: str) -> MarketData:
