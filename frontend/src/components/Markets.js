@@ -28,9 +28,31 @@ const Markets = () => {
         const allCoins = coinsResponse.data.data;
         setCoins(allCoins);
         
-        // Fetch market data for top 20 coins initially for faster loading
-        const topCoins = allCoins.slice(0, 20);
-        await fetchMarketDataForCoins(topCoins);
+        // Only fetch market data for top 10 coins initially for fastest loading
+        const topCoins = allCoins.slice(0, 10);
+        const marketPromises = topCoins.map(async (coin) => {
+          try {
+            const response = await axios.get(`/api/market/${coin.symbol}`);
+            return {
+              symbol: coin.symbol,
+              data: response.data.success ? response.data.data : null
+            };
+          } catch (error) {
+            console.warn(`Failed to fetch market data for ${coin.symbol}:`, error);
+            return { symbol: coin.symbol, data: null };
+          }
+        });
+
+        const results = await Promise.all(marketPromises);
+        const marketDataMap = {};
+        
+        results.forEach(result => {
+          if (result.data) {
+            marketDataMap[result.symbol] = result.data;
+          }
+        });
+        
+        setMarketData(marketDataMap);
       }
     } catch (error) {
       console.error('Error fetching coins data:', error);
