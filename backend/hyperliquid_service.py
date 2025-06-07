@@ -159,17 +159,36 @@ class HyperliquidService:
             account_value = float(margin_summary.get("accountValue", 0))
             withdrawable = float(user_state.get("withdrawable", 0))
             
-            # If perpetual account is empty, check spot balances
+            # If perpetual account is empty, check spot balances using different API
             spot_balance = 0.0
             try:
-                spot_state = self.info.spot_clearinghouse_state(self.exchange.wallet.address)
-                if spot_state and "balances" in spot_state:
-                    for balance in spot_state["balances"]:
-                        if balance.get("coin") == "USDC":
-                            spot_balance += float(balance.get("hold", 0)) + float(balance.get("total", 0))
-                            print(f"Found USDC spot balance: {spot_balance}")
+                # Try to get spot token balances using the public API
+                import requests
+                
+                spot_response = requests.post(
+                    "https://api.hyperliquid.xyz/info",
+                    json={"type": "spotClearinghouseState", "user": self.exchange.wallet.address},
+                    headers={"Content-Type": "application/json"}
+                )
+                
+                if spot_response.status_code == 200:
+                    spot_data = spot_response.json()
+                    print(f"Raw spot_clearinghouse response: {json.dumps(spot_data, indent=2)}")
+                    
+                    if "balances" in spot_data:
+                        for balance in spot_data["balances"]:
+                            if balance.get("coin") == "USDC":
+                                total = float(balance.get("total", 0))
+                                hold = float(balance.get("hold", 0))
+                                spot_balance = total + hold
+                                print(f"Found USDC spot balance: total={total}, hold={hold}, combined={spot_balance}")
+                                break
+                else:
+                    print(f"Spot API response status: {spot_response.status_code}")
+                    print(f"Spot API response: {spot_response.text}")
+                    
             except Exception as e:
-                print(f"Error fetching spot balances: {e}")
+                print(f"Error fetching spot balances via API: {e}")
             
             # Use the higher of perp account value or spot balance
             total_account_value = max(account_value, spot_balance)
