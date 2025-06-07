@@ -13,6 +13,7 @@ const Trading = () => {
     leverage: 1
   });
   const [marketData, setMarketData] = useState(null);
+  const [openOrders, setOpenOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
 
