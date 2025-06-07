@@ -279,6 +279,23 @@ const Settings = () => {
               </p>
             </div>
 
+            {/* API Key */}
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Hyperliquid API Key
+              </label>
+              <input
+                type="text"
+                value={formData.api_key}
+                onChange={(e) => setFormData(prev => ({ ...prev, api_key: e.target.value }))}
+                className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-blue-400"
+                placeholder="Enter your Hyperliquid API key"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                The API key identifier from your Hyperliquid API wallet.
+              </p>
+            </div>
+
             {/* API Secret Key */}
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">
