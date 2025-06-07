@@ -399,7 +399,7 @@ class HyperliquidService:
             return self._generate_mock_orders(5)
         
         try:
-            open_orders = self.info.open_orders(self.exchange.account.address)
+            open_orders = self.info.open_orders(self.exchange.wallet.address)
             
             orders = []
             for order_data in open_orders:
