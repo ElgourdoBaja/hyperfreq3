@@ -426,7 +426,9 @@ class HyperliquidService:
             return self._generate_mock_orders(5)
         
         try:
-            open_orders = self.info.open_orders(self.exchange.wallet.address)
+            # Use the wallet address from settings
+            target_wallet = self.wallet_address
+            open_orders = self.info.open_orders(target_wallet)
             
             orders = []
             for order_data in open_orders:
