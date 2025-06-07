@@ -147,15 +147,44 @@ class HyperliquidService:
             # Debug: Print the raw user_state response
             print(f"Raw user_state response: {json.dumps(user_state, indent=2)}")
             
+            # Also try to get spot clearinghouse state
+            try:
+                spot_state = self.info.spot_clearinghouse_state(self.exchange.wallet.address)
+                print(f"Raw spot_state response: {json.dumps(spot_state, indent=2)}")
+            except Exception as spot_e:
+                print(f"Could not fetch spot state: {spot_e}")
+            
+            # Get account value from marginSummary
+            margin_summary = user_state.get("marginSummary", {})
+            account_value = float(margin_summary.get("accountValue", 0))
+            withdrawable = float(user_state.get("withdrawable", 0))
+            
+            # If perpetual account is empty, check spot balances
+            spot_balance = 0.0
+            try:
+                spot_state = self.info.spot_clearinghouse_state(self.exchange.wallet.address)
+                if spot_state and "balances" in spot_state:
+                    for balance in spot_state["balances"]:
+                        if balance.get("coin") == "USDC":
+                            spot_balance += float(balance.get("hold", 0)) + float(balance.get("total", 0))
+                            print(f"Found USDC spot balance: {spot_balance}")
+            except Exception as e:
+                print(f"Error fetching spot balances: {e}")
+            
+            # Use the higher of perp account value or spot balance
+            total_account_value = max(account_value, spot_balance)
+            total_withdrawable = max(withdrawable, spot_balance)
+            
             account = Account(
                 address=self.exchange.wallet.address,
-                account_value=float(user_state.get("marginSummary", {}).get("accountValue", 0)),
-                margin_summary=user_state.get("marginSummary", {}),
+                account_value=total_account_value,
+                margin_summary=margin_summary,
                 cross_margin_summary=user_state.get("crossMarginSummary", {}),
-                withdrawable=float(user_state.get("withdrawable", 0))
+                withdrawable=total_withdrawable
             )
             
-            print(f"Account: Address {account.address[:8]}..., Account Value: ${account.account_value}")
+            print(f"Account: Address {account.address[:8]}..., Account Value: ${account.account_value}, Withdrawable: ${account.withdrawable}")
+            print(f"Perp Account Value: ${account_value}, Spot Balance: ${spot_balance}")
             return account
             
         except Exception as e:
