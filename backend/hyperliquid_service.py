@@ -374,17 +374,28 @@ class HyperliquidService:
             return self._generate_mock_order(coin, is_buy, size, price, order_type)
         
         try:
-            # Prepare order
-            order_request = {
-                "coin": coin,
-                "is_buy": is_buy,
-                "sz": size,
-                "limit_px": price,
-                "order_type": {"limit": {"tif": "Gtc"}} if order_type == OrderType.LIMIT else {"market": {}},
-                "reduce_only": reduce_only
-            }
+            print(f"Placing order: {coin}, buy={is_buy}, size={size}, price={price}, type={order_type}")
             
-            response = self.exchange.order(order_request)
+            # Import the correct OrderType from Hyperliquid SDK
+            from hyperliquid.utils.signing import OrderType as HlOrderType
+            
+            # Convert our OrderType to Hyperliquid OrderType
+            if order_type == OrderType.LIMIT:
+                hl_order_type = HlOrderType(limit={"tif": "Gtc"})
+            else:
+                hl_order_type = HlOrderType(market={})
+            
+            # Use the correct method signature
+            response = self.exchange.order(
+                name=coin,
+                is_buy=is_buy,
+                sz=size,
+                limit_px=price or 0.0,  # Hyperliquid requires a price even for market orders
+                order_type=hl_order_type,
+                reduce_only=reduce_only
+            )
+            
+            print(f"Order response: {response}")
             
             if response.get("status") == "ok":
                 order_data = response.get("response", {}).get("data", {})
