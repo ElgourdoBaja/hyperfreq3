@@ -102,6 +102,7 @@ const Settings = () => {
 
       // First save the settings if they've changed
       if (formData.wallet_address !== settings?.api_credentials?.wallet_address ||
+          formData.api_key !== settings?.api_credentials?.api_key ||
           formData.api_secret !== settings?.api_credentials?.api_secret ||
           formData.environment !== settings?.api_credentials?.environment) {
         await handleSaveSettings({ preventDefault: () => {} });
