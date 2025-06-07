@@ -493,6 +493,58 @@ async def send_portfolio_updates(websocket: WebSocket):
         except:
             break
 
+@app.get("/api/debug/wallet-info", response_model=APIResponse)
+async def debug_wallet_info():
+    """Debug endpoint to check wallet address and balances"""
+    try:
+        settings = await get_user_settings()
+        
+        debug_info = {
+            "settings_wallet_address": settings.api_credentials.wallet_address,
+            "settings_api_key": settings.api_credentials.api_key,
+            "derived_wallet_from_private_key": None,
+            "hyperliquid_perp_balance": 0,
+            "hyperliquid_spot_balance": 0
+        }
+        
+        if hyperliquid_service.is_configured:
+            debug_info["derived_wallet_from_private_key"] = hyperliquid_service.exchange.wallet.address
+            
+            # Get perp balance
+            try:
+                user_state = hyperliquid_service.info.user_state(hyperliquid_service.exchange.wallet.address)
+                debug_info["hyperliquid_perp_balance"] = float(user_state.get("marginSummary", {}).get("accountValue", 0))
+            except Exception as e:
+                debug_info["perp_error"] = str(e)
+            
+            # Get spot balance
+            try:
+                import requests
+                spot_response = requests.post(
+                    "https://api.hyperliquid.xyz/info",
+                    json={"type": "spotClearinghouseState", "user": hyperliquid_service.exchange.wallet.address},
+                    headers={"Content-Type": "application/json"}
+                )
+                if spot_response.status_code == 200:
+                    spot_data = spot_response.json()
+                    debug_info["spot_response"] = spot_data
+                    
+                    if "balances" in spot_data:
+                        for balance in spot_data["balances"]:
+                            if balance.get("coin") == "USDC":
+                                debug_info["hyperliquid_spot_balance"] = float(balance.get("total", 0)) + float(balance.get("hold", 0))
+                                break
+            except Exception as e:
+                debug_info["spot_error"] = str(e)
+        
+        return APIResponse(
+            success=True,
+            message="Debug info retrieved",
+            data=debug_info
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/coins", response_model=APIResponse)
 async def get_available_coins():
     """Get list of available coins for trading from real Hyperliquid API"""
