@@ -66,19 +66,26 @@ class HyperliquidService:
     async def get_portfolio(self) -> Portfolio:
         """Get user portfolio with positions and account value"""
         if not self.is_configured:
-            print("Portfolio: Using mock data - API not configured")
             return self._generate_mock_portfolio()
         
         try:
             print("Portfolio: Using real Hyperliquid API data")
-            # Get user state from Hyperliquid using the actual account address from the private key
-            user_state = self.info.user_state(self.exchange.wallet.address)
+            
+            # Use the wallet address from settings, not derived from private key
+            target_wallet = self.wallet_address
+            print(f"Querying portfolio for wallet: {target_wallet}")
+            
+            # Get user state from Hyperliquid using the target wallet address
+            user_state = self.info.user_state(target_wallet)
+            
+            # Debug: Print the raw user_state response
+            print(f"Raw user_state response: {json.dumps(user_state, indent=2)}")
             
             portfolio = Portfolio(
                 account_value=float(user_state.get("marginSummary", {}).get("accountValue", 0)),
                 available_balance=float(user_state.get("withdrawable", 0)),
                 margin_used=float(user_state.get("marginSummary", {}).get("totalMarginUsed", 0)),
-                total_pnl=float(user_state.get("marginSummary", {}).get("totalPnl", 0))
+                total_pnl=float(user_state.get("marginSummary", {}).get("totalRawUsd", 0))
             )
             
             # Convert positions
@@ -96,7 +103,8 @@ class HyperliquidService:
                     positions.append(position)
             
             portfolio.positions = positions
-            print(f"Portfolio: Loaded {len(positions)} positions, Account Value: ${portfolio.account_value}")
+            
+            print(f"Portfolio: Account Value ${portfolio.account_value}, Available ${portfolio.available_balance}, Positions: {len(positions)}")
             return portfolio
             
         except Exception as e:
