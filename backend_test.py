@@ -94,11 +94,77 @@ class HyperliquidSettingsTest:
         
         return success, response
 
-    def test_update_settings(self):
-        """Test updating settings with all three required fields"""
-        print("\n📋 Testing PUT /api/settings endpoint...")
+    def test_update_settings_with_whitespace(self):
+        """Test updating settings with whitespace in fields to verify trimming"""
+        print("\n📋 Testing PUT /api/settings with whitespace in fields...")
         
         # First get current settings
+        _, current_settings = self.run_test(
+            "Get Current Settings",
+            "GET",
+            "api/settings",
+            200
+        )
+        
+        if not current_settings:
+            print("❌ Could not get current settings to update")
+            return False, {}
+        
+        # Prepare test data with whitespace in fields
+        test_data = current_settings.get("data", {})
+        test_data["api_credentials"] = {
+            "wallet_address": "  0x1234567890abcdef1234567890abcdef12345678  ",
+            "api_key": " test_api_key_123 ",
+            "api_secret": "  test_api_secret_456  ",
+            "environment": "mainnet",
+            "is_configured": True
+        }
+        
+        # Update settings
+        success, response = self.run_test(
+            "Update Settings with Whitespace",
+            "PUT",
+            "api/settings",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            print("✅ Successfully updated settings with whitespace in fields")
+            
+            # Check API status to verify whitespace was trimmed
+            _, status_response = self.run_test(
+                "Check API Status After Whitespace Update",
+                "GET",
+                "api/settings/api-status",
+                200
+            )
+            
+            is_configured = status_response.get("data", {}).get("is_configured", False)
+            if is_configured:
+                print("✅ API is correctly configured after whitespace trimming")
+            else:
+                print("❌ API is not configured after whitespace trimming")
+                success = False
+                
+            # Check credentials status
+            creds_status = status_response.get("data", {}).get("credentials_status", {})
+            if (creds_status.get("wallet_address") and 
+                creds_status.get("api_key") and 
+                creds_status.get("api_secret")):
+                print("✅ All three credential fields are properly recognized after whitespace trimming")
+            else:
+                print("❌ Not all credential fields are recognized after whitespace trimming")
+                print(f"Credentials status: {creds_status}")
+                success = False
+        
+        return success, response
+
+    def test_api_status_with_all_fields(self):
+        """Test the API status endpoint with all fields filled"""
+        print("\n📋 Testing API status with all fields filled...")
+        
+        # First set up all fields
         _, current_settings = self.run_test(
             "Get Current Settings",
             "GET",
@@ -116,76 +182,163 @@ class HyperliquidSettingsTest:
             "wallet_address": "0x1234567890abcdef1234567890abcdef12345678",
             "api_key": "test_api_key_123",
             "api_secret": "test_api_secret_456",
-            "environment": "testnet",
+            "environment": "mainnet",
             "is_configured": True
         }
         
         # Update settings
-        success, response = self.run_test(
-            "Update Settings",
+        success, _ = self.run_test(
+            "Update Settings with All Fields",
             "PUT",
             "api/settings",
             200,
             data=test_data
         )
         
-        if success:
-            print("✅ Successfully updated settings with all three required fields")
-            
-            # Verify the updated settings
-            verify_success, verify_response = self.run_test(
-                "Verify Updated Settings",
-                "GET",
-                "api/settings",
-                200
-            )
-            
-            if verify_success:
-                updated_creds = verify_response.get("data", {}).get("api_credentials", {})
-                if (updated_creds.get("wallet_address") == "0x1234567890abcdef1234567890abcdef12345678" and
-                    updated_creds.get("api_key") == "test_api_key_123" and
-                    updated_creds.get("api_secret") == "test_api_secret_456"):
-                    print("✅ All three fields were correctly saved and retrieved")
-                else:
-                    print("❌ Updated settings do not match what was sent")
-                    success = False
+        if not success:
+            print("❌ Failed to update settings with all fields")
+            return False, {}
         
-        return success, response
-
-    def test_api_status(self):
-        """Test the API status endpoint"""
-        print("\n📋 Testing GET /api/settings/api-status endpoint...")
+        # Check API status
         success, response = self.run_test(
-            "Get API Status",
+            "Get API Status with All Fields",
             "GET",
             "api/settings/api-status",
             200
         )
         
         if success:
-            # Verify the response structure
             data = response.get("data", {})
-            if "is_configured" in data and "environment" in data and "test_result" in data:
-                print("✅ API status response contains all required fields")
-                
-                # Check if wallet_address is included in the response
-                if "wallet_address" in data:
-                    print("✅ API status includes wallet_address information")
-                else:
-                    print("❌ API status is missing wallet_address information")
+            
+            # Check if API is configured
+            if data.get("is_configured"):
+                print("✅ API is correctly configured with all fields filled")
             else:
-                print("❌ API status response is missing required fields")
+                print("❌ API is not configured even with all fields filled")
+                success = False
+            
+            # Check environment
+            if data.get("environment") == "mainnet":
+                print("✅ Environment is correctly set to mainnet")
+            else:
+                print(f"❌ Environment is not correctly set: {data.get('environment')}")
+                success = False
+            
+            # Check credentials status
+            creds_status = data.get("credentials_status", {})
+            if (creds_status.get("wallet_address") and 
+                creds_status.get("api_key") and 
+                creds_status.get("api_secret")):
+                print("✅ All three credential fields are properly recognized")
+            else:
+                print("❌ Not all credential fields are recognized")
+                print(f"Credentials status: {creds_status}")
+                success = False
+            
+            # Check test result message
+            test_result = data.get("test_result", "")
+            if "✅" in test_result and "successful" in test_result:
+                print(f"✅ Test result shows success: '{test_result}'")
+            else:
+                print(f"❌ Test result does not show success: '{test_result}'")
                 success = False
         
         return success, response
 
-    def test_validation_requirements(self):
-        """Test that all three fields are required for validation"""
-        print("\n📋 Testing validation requirements for all three fields...")
+    def test_auto_refresh_behavior(self):
+        """Test that API status is automatically refreshed after saving settings"""
+        print("\n📋 Testing auto-refresh behavior after saving settings...")
+        
+        # First set up with missing fields
+        _, current_settings = self.run_test(
+            "Get Current Settings",
+            "GET",
+            "api/settings",
+            200
+        )
+        
+        if not current_settings:
+            print("❌ Could not get current settings to update")
+            return False, {}
+        
+        # Prepare test data with missing fields
+        test_data = current_settings.get("data", {})
+        test_data["api_credentials"] = {
+            "wallet_address": "",
+            "api_key": "",
+            "api_secret": "",
+            "environment": "mainnet"
+        }
+        
+        # Update settings to unconfigured state
+        success, _ = self.run_test(
+            "Update Settings to Unconfigured State",
+            "PUT",
+            "api/settings",
+            200,
+            data=test_data
+        )
+        
+        if not success:
+            print("❌ Failed to update settings to unconfigured state")
+            return False, {}
+        
+        # Verify unconfigured state
+        _, status_before = self.run_test(
+            "Verify Unconfigured State",
+            "GET",
+            "api/settings/api-status",
+            200
+        )
+        
+        if status_before.get("data", {}).get("is_configured"):
+            print("❌ API is still showing as configured when it should not be")
+            return False, {}
+        
+        # Now update with all fields
+        test_data["api_credentials"] = {
+            "wallet_address": "0x1234567890abcdef1234567890abcdef12345678",
+            "api_key": "test_api_key_123",
+            "api_secret": "test_api_secret_456",
+            "environment": "mainnet"
+        }
+        
+        success, _ = self.run_test(
+            "Update Settings to Configured State",
+            "PUT",
+            "api/settings",
+            200,
+            data=test_data
+        )
+        
+        if not success:
+            print("❌ Failed to update settings to configured state")
+            return False, {}
+        
+        # Check API status immediately after update
+        success, status_after = self.run_test(
+            "Check API Status After Update",
+            "GET",
+            "api/settings/api-status",
+            200
+        )
+        
+        if success:
+            if status_after.get("data", {}).get("is_configured"):
+                print("✅ API status is automatically refreshed to show configured state")
+            else:
+                print("❌ API status is not showing as configured after update")
+                success = False
+        
+        return success, status_after
+
+    def test_validation_with_whitespace(self):
+        """Test validation with whitespace in fields"""
+        print("\n📋 Testing validation with whitespace in fields...")
         
         # First get current settings
         _, current_settings = self.run_test(
-            "Get Current Settings for Validation Test",
+            "Get Current Settings",
             "GET",
             "api/settings",
             200
@@ -193,43 +346,46 @@ class HyperliquidSettingsTest:
         
         if not current_settings:
             print("❌ Could not get current settings for validation test")
-            return False
+            return False, {}
         
         test_cases = [
             {
-                "name": "Missing wallet_address",
+                "name": "Whitespace only in wallet_address",
                 "data": {
+                    "wallet_address": "   ",
                     "api_key": "test_api_key_123",
                     "api_secret": "test_api_secret_456",
-                    "environment": "testnet"
+                    "environment": "mainnet"
                 },
                 "expected_configured": False
             },
             {
-                "name": "Missing api_key",
+                "name": "Whitespace only in api_key",
                 "data": {
                     "wallet_address": "0x1234567890abcdef1234567890abcdef12345678",
+                    "api_key": "  ",
                     "api_secret": "test_api_secret_456",
-                    "environment": "testnet"
+                    "environment": "mainnet"
                 },
                 "expected_configured": False
             },
             {
-                "name": "Missing api_secret",
+                "name": "Whitespace only in api_secret",
                 "data": {
                     "wallet_address": "0x1234567890abcdef1234567890abcdef12345678",
                     "api_key": "test_api_key_123",
-                    "environment": "testnet"
+                    "api_secret": "  ",
+                    "environment": "mainnet"
                 },
                 "expected_configured": False
             },
             {
-                "name": "All fields present",
+                "name": "Whitespace padding in all fields",
                 "data": {
-                    "wallet_address": "0x1234567890abcdef1234567890abcdef12345678",
-                    "api_key": "test_api_key_123",
-                    "api_secret": "test_api_secret_456",
-                    "environment": "testnet"
+                    "wallet_address": "  0x1234567890abcdef1234567890abcdef12345678  ",
+                    "api_key": "  test_api_key_123  ",
+                    "api_secret": "  test_api_secret_456  ",
+                    "environment": "mainnet"
                 },
                 "expected_configured": True
             }
@@ -244,7 +400,7 @@ class HyperliquidSettingsTest:
             test_data["api_credentials"] = test_case["data"]
             
             # Update settings
-            success, response = self.run_test(
+            success, _ = self.run_test(
                 f"Update Settings - {test_case['name']}",
                 "PUT",
                 "api/settings",
@@ -276,7 +432,7 @@ class HyperliquidSettingsTest:
             "wallet_address": "0x1234567890abcdef1234567890abcdef12345678",
             "api_key": "test_api_key_123",
             "api_secret": "test_api_secret_456",
-            "environment": "testnet",
+            "environment": "mainnet",
             "is_configured": True
         }
         
@@ -292,19 +448,19 @@ class HyperliquidSettingsTest:
 
     def run_all_tests(self):
         """Run all tests and print a summary"""
-        print("\n🚀 Starting Hyperliquid Settings API Tests...")
+        print("\n🚀 Starting Hyperliquid Settings API Tests for Fixed Issues...")
         
-        # Test getting settings
-        self.test_get_settings()
+        # Test API status with all fields filled
+        self.test_api_status_with_all_fields()
         
-        # Test updating settings
-        self.test_update_settings()
+        # Test whitespace handling
+        self.test_update_settings_with_whitespace()
         
-        # Test API status
-        self.test_api_status()
+        # Test validation with whitespace
+        self.test_validation_with_whitespace()
         
-        # Test validation requirements
-        self.test_validation_requirements()
+        # Test auto-refresh behavior
+        self.test_auto_refresh_behavior()
         
         # Print summary
         print("\n📊 Test Summary:")
