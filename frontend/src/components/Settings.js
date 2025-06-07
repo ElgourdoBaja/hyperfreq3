@@ -247,8 +247,8 @@ const Settings = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, environment: e.target.value }))}
                 className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:outline-none focus:border-blue-400"
               >
-                <option value="testnet">Testnet</option>
-                <option value="mainnet">Mainnet</option>
+                <option value="mainnet">Mainnet (Live Trading)</option>
+                <option value="testnet">Testnet (Paper Trading)</option>
               </select>
               <p className="text-xs text-gray-500 mt-1">
                 {formData.environment === 'testnet' 
@@ -258,10 +258,10 @@ const Settings = () => {
               </p>
             </div>
 
-            {/* Wallet Address */}
+            {/* Main Wallet Address */}
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">
-                Main Wallet Address (Public Key)
+                Main Wallet Address
               </label>
               <input
                 type="text"
@@ -271,22 +271,22 @@ const Settings = () => {
                 placeholder="0x1234567890abcdef1234567890abcdef12345678"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Your main wallet address from Hyperliquid (not the API wallet address).
+                Your main wallet address from Hyperliquid (master account address).
               </p>
             </div>
 
-            {/* Private Key */}
+            {/* API Secret Key */}
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">
-                API Wallet Private Key
+                Hyperliquid API Secret Key
               </label>
               <div className="relative">
                 <input
                   type={showPrivateKey ? 'text' : 'password'}
-                  value={formData.private_key}
-                  onChange={(e) => setFormData(prev => ({ ...prev, private_key: e.target.value }))}
+                  value={formData.api_secret}
+                  onChange={(e) => setFormData(prev => ({ ...prev, api_secret: e.target.value }))}
                   className="w-full bg-gray-700 text-white px-3 py-2 pr-10 rounded border border-gray-600 focus:outline-none focus:border-blue-400"
-                  placeholder="Enter your API wallet private key"
+                  placeholder="Enter your Hyperliquid API secret key"
                 />
                 <button
                   type="button"
@@ -297,7 +297,7 @@ const Settings = () => {
                 </button>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                The private key from your generated API wallet (not your main wallet private key).
+                The API secret key generated from your Hyperliquid API wallet.
               </p>
             </div>
 
