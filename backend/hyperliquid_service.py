@@ -144,6 +144,9 @@ class HyperliquidService:
             print("Account: Using real Hyperliquid API data")
             user_state = self.info.user_state(self.exchange.wallet.address)
             
+            # Debug: Print the raw user_state response
+            print(f"Raw user_state response: {json.dumps(user_state, indent=2)}")
+            
             account = Account(
                 address=self.exchange.wallet.address,
                 account_value=float(user_state.get("marginSummary", {}).get("accountValue", 0)),
