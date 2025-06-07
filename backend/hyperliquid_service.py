@@ -406,7 +406,10 @@ class HyperliquidService:
                     if len(statuses) > 0:
                         status = statuses[0]
                         
-                        if "filled" in status:
+                        if "error" in status:
+                            # Order was rejected
+                            raise Exception(f"Order rejected: {status['error']}")
+                        elif "filled" in status:
                             # Order was filled immediately
                             filled_data = status["filled"]
                             return Order(
