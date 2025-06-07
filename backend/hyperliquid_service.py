@@ -19,11 +19,17 @@ from models import (
 )
 
 class HyperliquidService:
-    def __init__(self):
-        self.wallet_address = os.getenv("HYPERLIQUID_WALLET_ADDRESS", "")
-        self.api_key = os.getenv("HYPERLIQUID_API_KEY", "")
-        self.api_secret = os.getenv("HYPERLIQUID_API_SECRET", "")
-        self.environment = os.getenv("HYPERLIQUID_ENV", "testnet")
+    def __init__(self, wallet_address=None, api_key=None, api_secret=None, environment=None):
+        # Try to get credentials from parameters first, then environment variables
+        self.wallet_address = wallet_address or os.getenv("HYPERLIQUID_WALLET_ADDRESS", "")
+        self.api_key = api_key or os.getenv("HYPERLIQUID_API_KEY", "")
+        self.api_secret = api_secret or os.getenv("HYPERLIQUID_API_SECRET", "")
+        self.environment = environment or os.getenv("HYPERLIQUID_ENV", "testnet")
+        
+        # Clean up wallet address (remove extra spaces)
+        if self.wallet_address:
+            self.wallet_address = self.wallet_address.strip()
+        
         self.is_configured = bool(self.wallet_address and self.api_key and self.api_secret and 
                                 self.wallet_address != "" and self.api_key != "" and self.api_secret != "")
         
@@ -40,7 +46,7 @@ class HyperliquidService:
                 # Hyperliquid runs on Arbitrum, not Ethereum mainnet
                 account = Account.from_key(self.api_secret)
                 print(f"Account derived from private key: {account.address}")
-                print(f"Target wallet address: {self.wallet_address.strip()}")
+                print(f"Target wallet address: {self.wallet_address}")
                 
                 # Use the account for Exchange initialization
                 self.exchange = Exchange(account, self.base_url)
