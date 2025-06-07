@@ -344,6 +344,53 @@ const Trading = () => {
             <p className="text-gray-400 text-center py-8">No market data available</p>
           )}
         </div>
+
+        {/* Open Orders */}
+        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
+          <h2 className="text-xl font-bold text-white mb-4">Open Orders</h2>
+          
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <LoadingSpinner />
+            </div>
+          ) : openOrders.length > 0 ? (
+            <div className="space-y-3">
+              {openOrders.map((order, index) => (
+                <div key={index} className="p-3 bg-gray-700 rounded border border-gray-600">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-semibold text-white">{order.coin}</span>
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        order.side === 'buy' 
+                          ? 'bg-green-900 text-green-300'
+                          : 'bg-red-900 text-red-300'
+                      }`}>
+                        {order.side === 'buy' ? 'LONG' : 'SHORT'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleCancelOrder(order.coin, order.oid)}
+                      className="text-red-400 hover:text-red-300 text-sm px-2 py-1 bg-red-900 hover:bg-red-800 rounded transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    <p>Size: {order.size}</p>
+                    {order.price && <p>Price: {formatPrice(order.price)}</p>}
+                    <p>Type: {order.order_type}</p>
+                    <p>Status: {order.status}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-400">No open orders</p>
+              <p className="text-sm text-gray-500 mt-1">Your pending orders will appear here</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
