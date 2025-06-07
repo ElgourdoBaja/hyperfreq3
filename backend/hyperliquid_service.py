@@ -44,7 +44,18 @@ class HyperliquidService:
                 
                 # Create Account object from private key (api_secret) for Arbitrum
                 # Hyperliquid runs on Arbitrum, not Ethereum mainnet
-                account = Account.from_key(self.api_secret)
+                print(f"Attempting to create account from private key...")
+                print(f"Private key length: {len(self.api_secret)}")
+                print(f"Private key format: {self.api_secret[:8]}...{self.api_secret[-8:]}")
+                
+                # Ensure private key is properly formatted (64 hex characters)
+                if len(self.api_secret) == 64 and all(c in '0123456789abcdef' for c in self.api_secret.lower()):
+                    # Add 0x prefix if not present
+                    private_key = self.api_secret if self.api_secret.startswith('0x') else '0x' + self.api_secret
+                    account = Account.from_key(private_key)
+                else:
+                    account = Account.from_key(self.api_secret)
+                    
                 print(f"Account derived from private key: {account.address}")
                 print(f"Target wallet address: {self.wallet_address}")
                 
