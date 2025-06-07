@@ -36,18 +36,25 @@ class HyperliquidService:
                 )
                 self.info = Info(self.base_url, skip_ws=True)
                 
-                # Create Account object from private key (api_secret)
+                # Create Account object from private key (api_secret) for Arbitrum
+                # Hyperliquid runs on Arbitrum, not Ethereum mainnet
                 account = Account.from_key(self.api_secret)
-                self.exchange = Exchange(account, self.base_url, account_address=self.wallet_address)
+                print(f"Account derived from private key: {account.address}")
+                print(f"Target wallet address: {self.wallet_address.strip()}")
+                
+                # Use the account for Exchange initialization
+                self.exchange = Exchange(account, self.base_url)
                 
                 self.ws_url = (
                     os.getenv("HYPERLIQUID_WS_TESTNET") if self.environment == "testnet"
                     else os.getenv("HYPERLIQUID_WS_MAINNET")
                 )
-                print(f"Hyperliquid service initialized successfully. Environment: {self.environment}")
-                print(f"Account address: {self.wallet_address[:8]}...{self.wallet_address[-8:]}")
+                print(f"Hyperliquid service initialized successfully on Arbitrum. Environment: {self.environment}")
+                print(f"Using account: {account.address}")
             except Exception as e:
                 print(f"Failed to initialize Hyperliquid API: {e}")
+                import traceback
+                traceback.print_exc()
                 self.is_configured = False
         else:
             print(f"Hyperliquid service not configured. Missing credentials: wallet={bool(self.wallet_address)}, key={bool(self.api_key)}, secret={bool(self.api_secret)}")
