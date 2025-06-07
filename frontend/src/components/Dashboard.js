@@ -23,57 +23,36 @@ const Dashboard = () => {
     try {
       setLoading(true);
       
-      // First check if API is configured
-      const apiStatusResponse = await axios.get('/api/settings/api-status');
-      const isConfigured = apiStatusResponse.data.success && apiStatusResponse.data.data.is_configured;
-      
-      if (isConfigured) {
-        // Use real Hyperliquid data when API is configured
-        console.log('Using real Hyperliquid account data');
-        
-        // Fetch real portfolio data
-        const portfolioResponse = await axios.get('/api/portfolio');
-        if (portfolioResponse.data.success) {
-          setPortfolio(portfolioResponse.data.data);
-        }
-
-        // Fetch real account data for more accurate balances
-        const accountResponse = await axios.get('/api/account');
-        if (accountResponse.data.success) {
-          const accountData = accountResponse.data.data;
-          // Update portfolio with real account data
-          setPortfolio(prev => ({
-            ...prev,
-            account_value: accountData.account_value || prev?.account_value || 0,
-            available_balance: accountData.withdrawable || prev?.available_balance || 0,
-            margin_used: accountData.margin_summary?.totalMarginUsed || prev?.margin_used || 0
-          }));
-        }
-      } else {
-        // Use mock data when API is not configured
-        console.log('Using mock data - API not configured');
-        const portfolioResponse = await axios.get('/api/portfolio');
-        if (portfolioResponse.data.success) {
-          setPortfolio(portfolioResponse.data.data);
-        }
+      // Fetch portfolio data
+      const portfolioResponse = await axios.get('/api/portfolio');
+      if (portfolioResponse.data.success) {
+        setPortfolio(portfolioResponse.data.data);
       }
 
-      // Fetch market data for multiple coins (always real)
-      const marketDataPromises = coins.map(coin => 
-        axios.get(`/api/market/${coin}`).then(res => ({
-          coin,
-          data: res.data.success ? res.data.data : null
-        }))
-      );
-      
-      const marketResults = await Promise.all(marketDataPromises);
-      const marketDataMap = {};
-      marketResults.forEach(result => {
-        if (result.data) {
-          marketDataMap[result.coin] = result.data;
-        }
-      });
-      setMarketData(marketDataMap);
+      // Fetch market data for multiple coins
+      try {
+        const marketDataPromises = coins.map(async coin => {
+          try {
+            const res = await axios.get(`/api/market/${coin}`);
+            return { coin, data: res.data.success ? res.data.data : null };
+          } catch (error) {
+            console.warn(`Failed to fetch market data for ${coin}:`, error);
+            return { coin, data: null };
+          }
+        });
+        
+        const marketResults = await Promise.all(marketDataPromises);
+        const marketDataMap = {};
+        marketResults.forEach(result => {
+          if (result.data) {
+            marketDataMap[result.coin] = result.data;
+          }
+        });
+        setMarketData(marketDataMap);
+      } catch (error) {
+        console.warn('Error fetching market data:', error);
+        // Don't fail the entire component if market data fails
+      }
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
