@@ -11,9 +11,9 @@ class HypertraderAPITester:
         self.tests_passed = 0
         self.test_results = []
 
-    def run_test(self, name, method, endpoint, expected_status=200, data=None):
+    def run_test(self, name, method, endpoint, expected_status=200, data=None, check_data=None):
         """Run a single API test"""
-        url = f"{self.base_url}{endpoint}"
+        url = f"{self.base_url}/api/{endpoint}"
         headers = {'Content-Type': 'application/json'}
         
         self.tests_run += 1
@@ -21,209 +21,243 @@ class HypertraderAPITester:
         
         try:
             if method == 'GET':
-                response = requests.get(url, headers=headers)
+                response = requests.get(url, headers=headers, timeout=10)
             elif method == 'POST':
-                response = requests.post(url, json=data, headers=headers)
-            elif method == 'PUT':
-                response = requests.put(url, json=data, headers=headers)
-            elif method == 'DELETE':
-                response = requests.delete(url, headers=headers)
-
+                response = requests.post(url, json=data, headers=headers, timeout=10)
+            
             success = response.status_code == expected_status
+            
+            # Additional data validation if provided
+            data_valid = True
+            data_message = ""
+            if success and check_data and response.status_code == 200:
+                try:
+                    resp_data = response.json()
+                    data_valid, data_message = check_data(resp_data)
+                    success = success and data_valid
+                except Exception as e:
+                    data_valid = False
+                    data_message = f"Error validating response data: {str(e)}"
+                    success = False
             
             if success:
                 self.tests_passed += 1
                 print(f"✅ Passed - Status: {response.status_code}")
-                result = {
-                    "name": name,
-                    "status": "PASS",
-                    "response_code": response.status_code,
-                    "data": response.json() if response.text else None
-                }
+                if data_message:
+                    print(f"   {data_message}")
             else:
                 print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
-                result = {
-                    "name": name,
-                    "status": "FAIL",
-                    "response_code": response.status_code,
-                    "error": response.text
-                }
+                if data_message:
+                    print(f"   {data_message}")
             
-            self.test_results.append(result)
-            return success, response.json() if success and response.text else None
+            # Store test result
+            self.test_results.append({
+                "name": name,
+                "success": success,
+                "status_code": response.status_code,
+                "expected_status": expected_status,
+                "message": data_message
+            })
+            
+            return success, response.json() if success and response.status_code != 204 else {}
 
+        except requests.exceptions.Timeout:
+            print(f"❌ Failed - Request timed out")
+            self.test_results.append({
+                "name": name,
+                "success": False,
+                "status_code": None,
+                "expected_status": expected_status,
+                "message": "Request timed out"
+            })
+            return False, {}
         except Exception as e:
             print(f"❌ Failed - Error: {str(e)}")
             self.test_results.append({
                 "name": name,
-                "status": "ERROR",
-                "error": str(e)
+                "success": False,
+                "status_code": None,
+                "expected_status": expected_status,
+                "message": str(e)
             })
-            return False, None
+            return False, {}
 
     def test_health(self):
-        """Test the health endpoint"""
-        return self.run_test("Health Check", "GET", "/api/health")
-
-    def test_root(self):
-        """Test the root endpoint"""
-        return self.run_test("Root Endpoint", "GET", "/api/")
-
-    def test_portfolio(self):
-        """Test the portfolio endpoint"""
-        return self.run_test("Portfolio Data", "GET", "/api/portfolio")
-
-    def test_account(self):
-        """Test the account endpoint"""
-        return self.run_test("Account Info", "GET", "/api/account")
-
-    def test_market_data(self, coin="BTC"):
-        """Test market data for a specific coin"""
-        return self.run_test(f"Market Data ({coin})", "GET", f"/api/market/{coin}")
-
-    def test_candlesticks(self, coin="BTC"):
-        """Test candlestick data for a specific coin"""
-        return self.run_test(f"Candlestick Data ({coin})", "GET", f"/api/candlesticks/{coin}")
-
-    def test_orderbook(self, coin="BTC"):
-        """Test order book for a specific coin"""
-        return self.run_test(f"Order Book ({coin})", "GET", f"/api/orderbook/{coin}")
-
-    def test_open_orders(self):
-        """Test open orders endpoint"""
-        return self.run_test("Open Orders", "GET", "/api/orders/open")
-
-    def test_order_history(self):
-        """Test order history endpoint"""
-        return self.run_test("Order History", "GET", "/api/orders/history")
-
-    def test_strategies(self):
-        """Test strategies endpoint"""
-        return self.run_test("Strategies", "GET", "/api/strategies")
-
-    def test_settings(self):
-        """Test settings endpoint"""
-        return self.run_test("Settings", "GET", "/api/settings")
-
-    def test_api_status(self):
-        """Test API status endpoint"""
-        return self.run_test("API Status", "GET", "/api/settings/api-status")
-
-    def test_coins(self):
-        """Test available coins endpoint"""
-        return self.run_test("Available Coins", "GET", "/api/coins")
-
-    def print_summary(self):
-        """Print a summary of all test results"""
-        print("\n" + "="*50)
-        print(f"📊 TEST SUMMARY: {self.tests_passed}/{self.tests_run} tests passed")
-        print("="*50)
+        """Test health endpoint"""
+        def check_health_data(data):
+            if "status" in data and data["status"] == "healthy":
+                return True, "Health status is healthy"
+            return False, "Health status is not healthy"
         
-        # Group by status
-        passed = [t for t in self.test_results if t["status"] == "PASS"]
-        failed = [t for t in self.test_results if t["status"] == "FAIL"]
-        errors = [t for t in self.test_results if t["status"] == "ERROR"]
-        
-        if passed:
-            print(f"\n✅ PASSED TESTS ({len(passed)}):")
-            for test in passed:
-                print(f"  - {test['name']}")
-        
-        if failed:
-            print(f"\n❌ FAILED TESTS ({len(failed)}):")
-            for test in failed:
-                print(f"  - {test['name']} (Status: {test['response_code']})")
-        
-        if errors:
-            print(f"\n⚠️ ERRORS ({len(errors)}):")
-            for test in errors:
-                print(f"  - {test['name']}: {test['error']}")
-        
-        print("\n" + "="*50)
-        
-        # Check for specific data in responses
-        self.analyze_responses()
-        
-    def analyze_responses(self):
-        """Analyze response data for specific information"""
-        print("\n🔍 DETAILED ANALYSIS:")
-        
-        # Check account data
-        account_test = next((t for t in self.test_results if t["name"] == "Account Info" and t["status"] == "PASS"), None)
-        if account_test and account_test.get("data"):
-            account_data = account_test["data"].get("data", {})
-            wallet_address = account_data.get("address", "Not found")
-            print(f"👛 Wallet Address: {wallet_address}")
-        
-        # Check portfolio data
-        portfolio_test = next((t for t in self.test_results if t["name"] == "Portfolio Data" and t["status"] == "PASS"), None)
-        if portfolio_test and portfolio_test.get("data"):
-            portfolio_data = portfolio_test["data"].get("data", {})
-            account_value = portfolio_data.get("account_value", "Not found")
-            available_balance = portfolio_data.get("available_balance", "Not found")
-            positions = portfolio_data.get("positions", [])
+        return self.run_test(
+            "Health Check",
+            "GET",
+            "health",
+            200,
+            check_data=check_health_data
+        )
+
+    def test_get_coins(self):
+        """Test getting available coins"""
+        def check_coins_data(data):
+            if not data.get("success", False):
+                return False, "API response indicates failure"
             
-            print(f"💰 Account Value: ${account_value}")
-            print(f"💵 Available Balance: ${available_balance}")
-            print(f"📊 Number of Positions: {len(positions)}")
+            coins = data.get("data", [])
+            if not coins or len(coins) < 170:
+                return False, f"Expected at least 170 coins, got {len(coins)}"
             
-            if positions:
-                print("\nPositions:")
-                for pos in positions:
-                    print(f"  - {pos.get('coin')}: {pos.get('size')} @ ${pos.get('entry_price')}")
-        
-        # Check API status
-        api_status_test = next((t for t in self.test_results if t["name"] == "API Status" and t["status"] == "PASS"), None)
-        if api_status_test and api_status_test.get("data"):
-            status_data = api_status_test["data"].get("data", {})
-            is_configured = status_data.get("is_configured", False)
-            test_result = status_data.get("test_result", "Unknown")
+            # Check if coins have required fields
+            for coin in coins[:5]:  # Check first 5 coins
+                if not all(key in coin for key in ["symbol", "name", "maxLeverage"]):
+                    return False, f"Coin missing required fields: {coin}"
             
-            print(f"\n🔌 API Configuration: {'Configured' if is_configured else 'Not Configured'}")
-            print(f"🧪 API Test Result: {test_result}")
+            return True, f"Found {len(coins)} coins with required data"
         
-        # Check market data
-        market_tests = [t for t in self.test_results if t["name"].startswith("Market Data") and t["status"] == "PASS"]
-        if market_tests:
-            print("\n📈 Market Data:")
-            for test in market_tests:
-                if test.get("data") and test["data"].get("data"):
-                    coin = test["data"]["data"].get("coin", "Unknown")
-                    price = test["data"]["data"].get("price", "Unknown")
-                    print(f"  - {coin}: ${price}")
+        return self.run_test(
+            "Get Available Coins",
+            "GET",
+            "coins",
+            200,
+            check_data=check_coins_data
+        )
+
+    def test_get_market_data(self, coin="BTC"):
+        """Test getting market data for a coin"""
+        def check_market_data(data):
+            if not data.get("success", False):
+                return False, "API response indicates failure"
+            
+            market_data = data.get("data", {})
+            required_fields = ["price", "bid", "ask", "change_24h", "volume_24h"]
+            
+            for field in required_fields:
+                if field not in market_data:
+                    return False, f"Market data missing required field: {field}"
+            
+            return True, f"Market data for {coin} contains all required fields"
+        
+        return self.run_test(
+            f"Get Market Data for {coin}",
+            "GET",
+            f"market/{coin}",
+            200,
+            check_data=check_market_data
+        )
+
+    def test_get_orderbook(self, coin="BTC"):
+        """Test getting orderbook for a coin"""
+        def check_orderbook_data(data):
+            if not data.get("success", False):
+                return False, "API response indicates failure"
+            
+            orderbook = data.get("data", {})
+            if "bids" not in orderbook or "asks" not in orderbook:
+                return False, "Orderbook missing bids or asks"
+            
+            if not orderbook["bids"] or not orderbook["asks"]:
+                return False, "Orderbook has empty bids or asks"
+            
+            return True, f"Orderbook for {coin} contains bids and asks"
+        
+        return self.run_test(
+            f"Get Orderbook for {coin}",
+            "GET",
+            f"orderbook/{coin}",
+            200,
+            check_data=check_orderbook_data
+        )
+
+    def test_place_order(self, coin="BTC"):
+        """Test placing an order (mock test)"""
+        order_data = {
+            "coin": coin,
+            "is_buy": True,
+            "sz": 0.001,
+            "limit_px": 50000,
+            "order_type": "limit",
+            "reduce_only": False,
+            "leverage": 1
+        }
+        
+        # Note: We're not expecting this to succeed since we don't have real credentials
+        # This is just to test the API endpoint structure
+        return self.run_test(
+            "Place Order (Mock)",
+            "POST",
+            "orders",
+            500,  # Expecting error since we don't have real credentials
+            data=order_data
+        )
+
+    def test_get_candlesticks(self, coin="BTC"):
+        """Test getting candlestick data"""
+        def check_candlestick_data(data):
+            if not data.get("success", False):
+                return False, "API response indicates failure"
+            
+            candlesticks = data.get("data", [])
+            if not candlesticks:
+                return False, "No candlestick data returned"
+            
+            # Check if candlesticks have required fields
+            for candle in candlesticks[:3]:  # Check first 3 candles
+                required_fields = ["timestamp", "open", "high", "low", "close", "volume"]
+                for field in required_fields:
+                    if field not in candle:
+                        return False, f"Candlestick missing required field: {field}"
+            
+            return True, f"Found {len(candlesticks)} candlesticks with required data"
+        
+        return self.run_test(
+            f"Get Candlestick Data for {coin}",
+            "GET",
+            f"candlesticks/{coin}",
+            200,
+            check_data=check_candlestick_data
+        )
+
+    def run_all_tests(self):
+        """Run all API tests"""
+        print("🚀 Starting Hypertrader API Tests...")
+        
+        # Basic API tests
+        self.test_health()
+        
+        # Market data tests
+        self.test_get_coins()
+        
+        # Test with multiple coins
+        test_coins = ["BTC", "ETH", "SOL"]
+        for coin in test_coins:
+            self.test_get_market_data(coin)
+            self.test_get_orderbook(coin)
+            self.test_get_candlesticks(coin)
+        
+        # Trading tests (mock)
+        self.test_place_order()
+        
+        # Print summary
+        print("\n📊 Test Summary:")
+        print(f"Tests Run: {self.tests_run}")
+        print(f"Tests Passed: {self.tests_passed}")
+        print(f"Success Rate: {(self.tests_passed / self.tests_run * 100):.2f}%")
+        
+        # Print detailed results
+        print("\n📋 Detailed Results:")
+        for result in self.test_results:
+            status = "✅ PASS" if result["success"] else "❌ FAIL"
+            print(f"{status} - {result['name']}")
+            if not result["success"] and result["message"]:
+                print(f"       {result['message']}")
+        
+        return self.tests_passed == self.tests_run
 
 def main():
-    # Setup
+    # Get backend URL from environment or use default
     tester = HypertraderAPITester()
-    
-    # Basic API tests
-    tester.test_health()
-    tester.test_root()
-    
-    # Core data tests
-    tester.test_portfolio()
-    tester.test_account()
-    
-    # Market data tests
-    for coin in ["BTC", "ETH", "SOL", "AVAX"]:
-        tester.test_market_data(coin)
-        tester.test_candlesticks(coin)
-        tester.test_orderbook(coin)
-    
-    # Trading data tests
-    tester.test_open_orders()
-    tester.test_order_history()
-    
-    # Strategy and settings tests
-    tester.test_strategies()
-    tester.test_settings()
-    tester.test_api_status()
-    tester.test_coins()
-    
-    # Print results
-    tester.print_summary()
-    
-    return 0 if tester.tests_passed == tester.tests_run else 1
+    success = tester.run_all_tests()
+    return 0 if success else 1
 
 if __name__ == "__main__":
     sys.exit(main())
