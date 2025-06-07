@@ -35,13 +35,17 @@ class HyperliquidService:
                     else constants.MAINNET_API_URL
                 )
                 self.info = Info(self.base_url, skip_ws=True)
-                # Use api_secret as the wallet parameter for Exchange
-                self.exchange = Exchange(None, self.base_url, wallet=self.api_secret)
+                
+                # Create Account object from private key (api_secret)
+                account = Account.from_key(self.api_secret)
+                self.exchange = Exchange(account, self.base_url, account_address=self.wallet_address)
+                
                 self.ws_url = (
                     os.getenv("HYPERLIQUID_WS_TESTNET") if self.environment == "testnet"
                     else os.getenv("HYPERLIQUID_WS_MAINNET")
                 )
                 print(f"Hyperliquid service initialized successfully. Environment: {self.environment}")
+                print(f"Account address: {self.wallet_address[:8]}...{self.wallet_address[-8:]}")
             except Exception as e:
                 print(f"Failed to initialize Hyperliquid API: {e}")
                 self.is_configured = False
