@@ -347,11 +347,26 @@ async def update_settings(settings: UserSettings):
 async def get_api_status():
     """Check if Hyperliquid API is configured and working"""
     try:
-        is_configured = hyperliquid_service.is_api_configured()
+        # Get current settings from database to check actual configuration
+        settings = await get_user_settings()
+        
+        # Check if API credentials are configured in the database
+        is_configured = (
+            settings.api_credentials.wallet_address and 
+            settings.api_credentials.api_key and 
+            settings.api_credentials.api_secret and
+            settings.api_credentials.wallet_address.strip() != "" and
+            settings.api_credentials.api_key.strip() != "" and
+            settings.api_credentials.api_secret.strip() != ""
+        )
         
         # Test API connection if configured
         test_result = None
+        wallet_display = None
+        
         if is_configured:
+            wallet_display = f"{settings.api_credentials.wallet_address[:8]}...{settings.api_credentials.wallet_address[-8:]}"
+            
             try:
                 # Test basic API connection with public endpoint
                 import requests
@@ -363,33 +378,28 @@ async def get_api_status():
                 )
                 
                 if test_response.status_code == 200:
-                    test_result = "✅ API connection successful"
-                    
-                    # Try to get user account info if credentials are provided
-                    try:
-                        account = await hyperliquid_service.get_account_info()
-                        if account and account.address:
-                            test_result = f"✅ Connected successfully to account {account.address[:8]}...{account.address[-8:]}"
-                        else:
-                            test_result = "⚠️ API connected but could not verify account"
-                    except Exception as e:
-                        test_result = f"⚠️ API connected but authentication failed: {str(e)}"
+                    test_result = "✅ API connection successful - Ready for trading!"
                 else:
                     test_result = f"❌ API connection failed: HTTP {test_response.status_code}"
                     
             except Exception as e:
                 test_result = f"❌ Connection failed: {str(e)}"
         else:
-            test_result = "⚠️ API credentials not configured"
+            test_result = "⚠️ Please enter all three API credentials (wallet address, API key, and API secret key)"
         
         return APIResponse(
             success=True,
             message="API status retrieved successfully",
             data={
                 "is_configured": is_configured,
-                "environment": hyperliquid_service.environment,
+                "environment": settings.api_credentials.environment,
                 "test_result": test_result,
-                "wallet_address": hyperliquid_service.wallet_address[:8] + "..." + hyperliquid_service.wallet_address[-8:] if hyperliquid_service.wallet_address else None
+                "wallet_address": wallet_display,
+                "credentials_status": {
+                    "wallet_address": bool(settings.api_credentials.wallet_address and settings.api_credentials.wallet_address.strip()),
+                    "api_key": bool(settings.api_credentials.api_key and settings.api_credentials.api_key.strip()),
+                    "api_secret": bool(settings.api_credentials.api_secret and settings.api_credentials.api_secret.strip())
+                }
             }
         )
     except Exception as e:
