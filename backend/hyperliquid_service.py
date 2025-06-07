@@ -70,8 +70,8 @@ class HyperliquidService:
         
         try:
             print("Portfolio: Using real Hyperliquid API data")
-            # Get user state from Hyperliquid
-            user_state = self.info.user_state(self.wallet_address)
+            # Get user state from Hyperliquid using the actual account address from the private key
+            user_state = self.info.user_state(self.exchange.account.address)
             
             portfolio = Portfolio(
                 account_value=float(user_state.get("marginSummary", {}).get("accountValue", 0)),
