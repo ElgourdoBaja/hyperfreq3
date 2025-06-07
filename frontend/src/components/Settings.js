@@ -65,9 +65,9 @@ const Settings = () => {
         ...settings,
         api_credentials: {
           wallet_address: formData.wallet_address,
-          private_key: formData.private_key,
+          api_secret: formData.api_secret,
           environment: formData.environment,
-          is_configured: Boolean(formData.wallet_address && formData.private_key)
+          is_configured: Boolean(formData.wallet_address && formData.api_secret)
         }
       };
 
