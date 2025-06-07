@@ -23,13 +23,42 @@ const Dashboard = () => {
     try {
       setLoading(true);
       
-      // Fetch portfolio data
-      const portfolioResponse = await axios.get('/api/portfolio');
-      if (portfolioResponse.data.success) {
-        setPortfolio(portfolioResponse.data.data);
+      // First check if API is configured
+      const apiStatusResponse = await axios.get('/api/settings/api-status');
+      const isConfigured = apiStatusResponse.data.success && apiStatusResponse.data.data.is_configured;
+      
+      if (isConfigured) {
+        // Use real Hyperliquid data when API is configured
+        console.log('Using real Hyperliquid account data');
+        
+        // Fetch real portfolio data
+        const portfolioResponse = await axios.get('/api/portfolio');
+        if (portfolioResponse.data.success) {
+          setPortfolio(portfolioResponse.data.data);
+        }
+
+        // Fetch real account data for more accurate balances
+        const accountResponse = await axios.get('/api/account');
+        if (accountResponse.data.success) {
+          const accountData = accountResponse.data.data;
+          // Update portfolio with real account data
+          setPortfolio(prev => ({
+            ...prev,
+            account_value: accountData.account_value || prev?.account_value || 0,
+            available_balance: accountData.withdrawable || prev?.available_balance || 0,
+            margin_used: accountData.margin_summary?.totalMarginUsed || prev?.margin_used || 0
+          }));
+        }
+      } else {
+        // Use mock data when API is not configured
+        console.log('Using mock data - API not configured');
+        const portfolioResponse = await axios.get('/api/portfolio');
+        if (portfolioResponse.data.success) {
+          setPortfolio(portfolioResponse.data.data);
+        }
       }
 
-      // Fetch market data for multiple coins
+      // Fetch market data for multiple coins (always real)
       const marketDataPromises = coins.map(coin => 
         axios.get(`/api/market/${coin}`).then(res => ({
           coin,
