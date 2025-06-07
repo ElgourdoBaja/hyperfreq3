@@ -18,77 +18,47 @@ from models import (
 )
 
 class HyperliquidService:
-    def __init__(self, wallet_address=None, api_key=None, api_secret=None, environment=None):
-        # Try to get credentials from parameters first, then environment variables
+    def __init__(self, wallet_address=None, api_key=None, api_secret=None, environment="testnet"):
+        # Use provided credentials or get from environment
         self.wallet_address = wallet_address or os.getenv("HYPERLIQUID_WALLET_ADDRESS", "")
         self.api_key = api_key or os.getenv("HYPERLIQUID_API_KEY", "")
         self.api_secret = api_secret or os.getenv("HYPERLIQUID_API_SECRET", "")
         self.environment = environment or os.getenv("HYPERLIQUID_ENV", "testnet")
         
-        # Clean up wallet address (remove extra spaces)
-        if self.wallet_address:
-            self.wallet_address = self.wallet_address.strip()
+        # Check if we have the required credentials
+        self.is_configured = bool(self.wallet_address and self.api_key and self.api_secret)
         
-        self.is_configured = bool(self.wallet_address and self.api_key and self.api_secret and 
-                                self.wallet_address != "" and self.api_key != "" and self.api_secret != "")
-        
-        # Initialize API clients
         if self.is_configured:
             try:
                 self.base_url = (
-                    constants.TESTNET_API_URL if self.environment == "testnet" 
-                    else constants.MAINNET_API_URL
+                    "https://api.hyperliquid-testnet.xyz" if self.environment == "testnet" 
+                    else "https://api.hyperliquid.xyz"
                 )
+                
+                # Initialize Info API (doesn't need private key)
                 self.info = Info(self.base_url, skip_ws=True)
                 
-                # Create Account object from private key (api_secret) for Arbitrum
-                # Hyperliquid runs on Arbitrum, not Ethereum mainnet
-                print(f"Attempting to create account from private key...")
-                print(f"Private key length: {len(self.api_secret)}")
-                print(f"Private key format: {self.api_secret[:8]}...{self.api_secret[-8:]}")
-                
-                try:
-                    # Import Account within the try block to catch import issues
-                    from eth_account import Account as EthAccount
-                    
-                    # Ensure private key is properly formatted (64 hex characters)
-                    if len(self.api_secret) == 64 and all(c in '0123456789abcdef' for c in self.api_secret.lower()):
-                        # Add 0x prefix if not present
-                        private_key = self.api_secret if self.api_secret.startswith('0x') else '0x' + self.api_secret
-                        account = EthAccount.from_key(private_key)
-                    else:
-                        account = EthAccount.from_key(self.api_secret)
-                        
-                    print(f"✅ Account derived from private key: {account.address}")
-                    print(f"Target wallet address: {self.wallet_address}")
-                except Exception as account_error:
-                    print(f"❌ Account creation failed: {account_error}")
-                    import traceback
-                    traceback.print_exc()
-                    raise account_error
-                
-                try:
-                    # Use the account for Exchange initialization
-                    print("Attempting to initialize Exchange...")
-                    self.exchange = Exchange(account, self.base_url)
-                    print("✅ Exchange initialized successfully")
-                except Exception as exchange_error:
-                    print(f"❌ Exchange initialization failed: {exchange_error}")
-                    raise exchange_error
+                # Initialize Exchange for trading (needs private key)
+                self.exchange = Exchange(None, self.base_url, wallet=self.api_secret)
                 
                 self.ws_url = (
                     os.getenv("HYPERLIQUID_WS_TESTNET") if self.environment == "testnet"
                     else os.getenv("HYPERLIQUID_WS_MAINNET")
                 )
-                print(f"Hyperliquid service initialized successfully on Arbitrum. Environment: {self.environment}")
-                print(f"Using account: {account.address}")
+                
+                print(f"Hyperliquid service initialized:")
+                print(f"- Environment: {self.environment}")
+                print(f"- Target Wallet: {self.wallet_address}")
+                print(f"- Exchange Wallet: {self.exchange.wallet.address}")
+                print(f"- Configured: {self.is_configured}")
+                
             except Exception as e:
                 print(f"Failed to initialize Hyperliquid API: {e}")
-                import traceback
-                traceback.print_exc()
                 self.is_configured = False
         else:
             print(f"Hyperliquid service not configured. Missing credentials: wallet={bool(self.wallet_address)}, key={bool(self.api_key)}, secret={bool(self.api_secret)}")
+            self.info = None
+            self.exchange = None
     
     def is_api_configured(self) -> bool:
         return self.is_configured
