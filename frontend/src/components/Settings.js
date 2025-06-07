@@ -332,14 +332,15 @@ const Settings = () => {
 
           <div className="space-y-4">
             <div className="p-4 bg-blue-900 bg-opacity-30 border border-blue-700 rounded-lg">
-              <h3 className="font-semibold text-blue-300 mb-2">How to get your API credentials:</h3>
+              <h3 className="font-semibold text-blue-300 mb-2">How to get your Hyperliquid API credentials:</h3>
               <ol className="text-sm text-blue-200 space-y-1 list-decimal list-inside">
                 <li>Go to <a href="https://app.hyperliquid.xyz/API" target="_blank" rel="noopener noreferrer" className="underline">Hyperliquid API Management</a></li>
-                <li>Generate a new API wallet with a descriptive name</li>
-                <li>Click "Authorize API Wallet" to get your private key</li>
-                <li>Copy your <strong>main wallet address</strong> (from the dropdown at top-right)</li>
-                <li>Copy the generated <strong>API wallet private key</strong></li>
-                <li>Paste both into the fields above</li>
+                <li>Copy your <strong>main wallet address</strong> from the top-right dropdown</li>
+                <li>Enter a descriptive name for your API wallet</li>
+                <li>Click "Generate" to create the API wallet</li>
+                <li>Click "Authorize API Wallet" to reveal the API secret key</li>
+                <li>Copy both the <strong>main wallet address</strong> and <strong>API secret key</strong></li>
+                <li>Paste them into the fields above</li>
               </ol>
             </div>
 
