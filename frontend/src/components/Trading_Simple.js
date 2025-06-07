@@ -91,6 +91,21 @@ const Trading = () => {
     }
   };
 
+  const handleCancelOrder = async (coin, oid) => {
+    try {
+      const response = await axios.delete(`/api/orders/${coin}/${oid}`);
+      if (response.data.success) {
+        setMessage({ type: 'success', text: 'Order cancelled successfully!' });
+        fetchTradingData(); // Refresh data to remove cancelled order
+      } else {
+        setMessage({ type: 'error', text: 'Failed to cancel order' });
+      }
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      setMessage({ type: 'error', text: 'Failed to cancel order' });
+    }
+  };
+
   const formatPrice = (price) => {
     return `$${price?.toLocaleString('en-US', { 
       minimumFractionDigits: 2, 
