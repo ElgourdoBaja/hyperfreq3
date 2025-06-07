@@ -79,6 +79,31 @@ async def get_user_settings() -> UserSettings:
         await db.user_settings.insert_one(default_settings.dict())
         return default_settings
 
+async def initialize_hyperliquid_service():
+    """Initialize Hyperliquid service with credentials from database"""
+    try:
+        settings = await get_user_settings()
+        if settings.api_credentials.wallet_address and settings.api_credentials.api_key and settings.api_credentials.api_secret:
+            print("Initializing Hyperliquid service with saved credentials...")
+            global hyperliquid_service
+            from hyperliquid_service import HyperliquidService
+            hyperliquid_service = HyperliquidService(
+                wallet_address=settings.api_credentials.wallet_address,
+                api_key=settings.api_credentials.api_key,
+                api_secret=settings.api_credentials.api_secret,
+                environment=settings.api_credentials.environment
+            )
+            print(f"Hyperliquid service initialized. Configured: {hyperliquid_service.is_configured}")
+        else:
+            print("No saved credentials found. Using unconfigured service.")
+    except Exception as e:
+        print(f"Failed to initialize Hyperliquid service with saved credentials: {e}")
+
+# Initialize service with saved credentials on startup
+@app.on_event("startup")
+async def startup_event():
+    await initialize_hyperliquid_service()
+
 # Root endpoint
 @app.get("/api/")
 async def root():
