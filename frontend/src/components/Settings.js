@@ -139,9 +139,9 @@ const Settings = () => {
   const getStatusIcon = () => {
     if (!apiStatus) return null;
     
-    if (apiStatus.is_configured && apiStatus.test_result?.includes('successfully')) {
+    if (apiStatus.is_configured && apiStatus.test_result?.includes('✅')) {
       return <CheckCircle className="w-5 h-5 text-green-400" />;
-    } else if (apiStatus.is_configured) {
+    } else if (apiStatus.is_configured && apiStatus.test_result?.includes('❌')) {
       return <AlertCircle className="w-5 h-5 text-red-400" />;
     } else {
       return <AlertCircle className="w-5 h-5 text-yellow-400" />;
@@ -151,10 +151,12 @@ const Settings = () => {
   const getStatusText = () => {
     if (!apiStatus) return 'Checking...';
     
-    if (apiStatus.is_configured && apiStatus.test_result?.includes('successfully')) {
-      return 'Connected and working';
-    } else if (apiStatus.is_configured) {
+    if (apiStatus.is_configured && apiStatus.test_result?.includes('✅')) {
+      return 'Connected and ready for trading';
+    } else if (apiStatus.is_configured && apiStatus.test_result?.includes('❌')) {
       return 'Configured but connection failed';
+    } else if (apiStatus.is_configured) {
+      return 'Configured - checking connection...';
     } else {
       return 'Not configured';
     }
@@ -163,10 +165,12 @@ const Settings = () => {
   const getStatusColor = () => {
     if (!apiStatus) return 'text-gray-400';
     
-    if (apiStatus.is_configured && apiStatus.test_result?.includes('successfully')) {
+    if (apiStatus.is_configured && apiStatus.test_result?.includes('✅')) {
       return 'text-green-400';
-    } else if (apiStatus.is_configured) {
+    } else if (apiStatus.is_configured && apiStatus.test_result?.includes('❌')) {
       return 'text-red-400';
+    } else if (apiStatus.is_configured) {
+      return 'text-yellow-400';
     } else {
       return 'text-yellow-400';
     }
