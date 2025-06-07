@@ -357,10 +357,10 @@ const Settings = () => {
             <div className="p-4 bg-yellow-900 bg-opacity-30 border border-yellow-700 rounded-lg">
               <h3 className="font-semibold text-yellow-300 mb-2">Important Notes:</h3>
               <ul className="text-sm text-yellow-200 space-y-1">
-                <li>• <strong>Main Wallet Address:</strong> Use your main wallet address, NOT the API wallet address</li>
-                <li>• <strong>API Private Key:</strong> Use the API wallet private key, NOT your main wallet private key</li>
-                <li>• Always start with testnet for testing</li>
-                <li>• Never share your private keys with anyone</li>
+                <li>• <strong>Main Wallet Address:</strong> Your master account address from Hyperliquid</li>
+                <li>• <strong>API Secret Key:</strong> The secret key from your generated API wallet</li>
+                <li>• Choose mainnet for live trading or testnet for paper trading</li>
+                <li>• Never share your API secret key with anyone</li>
                 <li>• Monitor your account regularly for security</li>
               </ul>
             </div>
