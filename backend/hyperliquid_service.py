@@ -30,35 +30,34 @@ class HyperliquidService:
         
         if self.is_configured:
             try:
-                self.base_url = (
-                    "https://api.hyperliquid-testnet.xyz" if self.environment == "testnet" 
-                    else "https://api.hyperliquid.xyz"
-                )
-                
-                # Initialize Info API (doesn't need private key)
-                self.info = Info(self.base_url, skip_ws=True)
-                
-                # Initialize Exchange for trading (needs private key)
-                self.exchange = Exchange(None, self.base_url, wallet=self.api_secret)
-                
-                self.ws_url = (
-                    os.getenv("HYPERLIQUID_WS_TESTNET") if self.environment == "testnet"
-                    else os.getenv("HYPERLIQUID_WS_MAINNET")
-                )
+                # Import the new Hyperliquid SDK
+                from hyperliquid import Hyperliquid
                 
                 print(f"Hyperliquid service initialized:")
                 print(f"- Environment: {self.environment}")
                 print(f"- Target Wallet: {self.wallet_address}")
-                print(f"- Exchange Wallet: {self.exchange.wallet.address}")
-                print(f"- Configured: {self.is_configured}")
+                
+                # Initialize the new SDK
+                self.sdk = Hyperliquid(
+                    private_key=self.api_secret,
+                    testnet=(self.environment == "testnet"),
+                    walletAddress=self.wallet_address
+                )
+                
+                # Get info and exchange from the SDK
+                self.info = self.sdk.info
+                self.exchange = self.sdk.exchange
+                
+                print(f"- SDK Configured: {self.is_configured}")
                 
             except Exception as e:
-                print(f"Failed to initialize Hyperliquid API: {e}")
+                print(f"Failed to initialize Hyperliquid SDK: {e}")
                 self.is_configured = False
         else:
             print(f"Hyperliquid service not configured. Missing credentials: wallet={bool(self.wallet_address)}, key={bool(self.api_key)}, secret={bool(self.api_secret)}")
             self.info = None
             self.exchange = None
+            self.sdk = None
     
     def is_api_configured(self) -> bool:
         return self.is_configured
