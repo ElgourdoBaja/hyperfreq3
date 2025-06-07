@@ -49,18 +49,23 @@ class HyperliquidService:
                 print(f"Private key format: {self.api_secret[:8]}...{self.api_secret[-8:]}")
                 
                 try:
+                    # Import Account within the try block to catch import issues
+                    from eth_account import Account as EthAccount
+                    
                     # Ensure private key is properly formatted (64 hex characters)
                     if len(self.api_secret) == 64 and all(c in '0123456789abcdef' for c in self.api_secret.lower()):
                         # Add 0x prefix if not present
                         private_key = self.api_secret if self.api_secret.startswith('0x') else '0x' + self.api_secret
-                        account = Account.from_key(private_key)
+                        account = EthAccount.from_key(private_key)
                     else:
-                        account = Account.from_key(self.api_secret)
+                        account = EthAccount.from_key(self.api_secret)
                         
                     print(f"✅ Account derived from private key: {account.address}")
                     print(f"Target wallet address: {self.wallet_address}")
                 except Exception as account_error:
                     print(f"❌ Account creation failed: {account_error}")
+                    import traceback
+                    traceback.print_exc()
                     raise account_error
                 
                 try:
