@@ -47,31 +47,43 @@ const Trading = () => {
     try {
       setLoading(true);
       
-      // Fetch market data
-      const marketResponse = await axios.get(`/api/market/${orderForm.coin}`);
-      if (marketResponse.data.success) {
-        setMarketData(marketResponse.data.data);
-        
-        // Auto-fill price for market orders
-        if (orderForm.orderType === 'market') {
-          const price = orderForm.side === 'long' ? marketResponse.data.data.ask : marketResponse.data.data.bid;
-          setOrderForm(prev => ({
-            ...prev,
-            price: price?.toFixed(2) || ''
-          }));
+      // Fetch market data (most important for trading)
+      try {
+        const marketResponse = await axios.get(`/api/market/${orderForm.coin}`);
+        if (marketResponse.data.success) {
+          setMarketData(marketResponse.data.data);
+          
+          // Auto-fill price for market orders
+          if (orderForm.orderType === 'market') {
+            const price = orderForm.side === 'long' ? marketResponse.data.data.ask : marketResponse.data.data.bid;
+            setOrderForm(prev => ({
+              ...prev,
+              price: price?.toFixed(2) || ''
+            }));
+          }
         }
+      } catch (error) {
+        console.warn('Error fetching market data:', error);
       }
 
-      // Fetch order book
-      const orderBookResponse = await axios.get(`/api/orderbook/${orderForm.coin}`);
-      if (orderBookResponse.data.success) {
-        setOrderBook(orderBookResponse.data.data);
+      // Fetch order book (second priority)
+      try {
+        const orderBookResponse = await axios.get(`/api/orderbook/${orderForm.coin}`);
+        if (orderBookResponse.data.success) {
+          setOrderBook(orderBookResponse.data.data);
+        }
+      } catch (error) {
+        console.warn('Error fetching order book:', error);
       }
 
-      // Fetch open orders
-      const ordersResponse = await axios.get('/api/orders/open');
-      if (ordersResponse.data.success) {
-        setOpenOrders(ordersResponse.data.data);
+      // Fetch open orders (lowest priority)
+      try {
+        const ordersResponse = await axios.get('/api/orders/open');
+        if (ordersResponse.data.success) {
+          setOpenOrders(ordersResponse.data.data);
+        }
+      } catch (error) {
+        console.warn('Error fetching open orders:', error);
       }
 
     } catch (error) {
