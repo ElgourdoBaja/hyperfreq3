@@ -148,7 +148,8 @@ class Account(BaseModel):
 # Settings Models
 class APICredentials(BaseModel):
     wallet_address: Optional[str] = None  # Main wallet address (master account)
-    api_secret: Optional[str] = None      # API secret key from Hyperliquid
+    api_key: Optional[str] = None         # API key identifier
+    api_secret: Optional[str] = None      # API secret key
     environment: str = "testnet"          # testnet or mainnet
     is_configured: bool = False
 
