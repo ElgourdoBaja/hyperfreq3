@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Search, TrendingUp, TrendingDown, Filter } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 
-const MarketList = () => {
+const Markets = () => {
   const [coins, setCoins] = useState([]);
   const [marketData, setMarketData] = useState({});
   const [loading, setLoading] = useState(true);
