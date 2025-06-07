@@ -398,10 +398,49 @@ class HyperliquidService:
             print(f"Order response: {response}")
             
             if response.get("status") == "ok":
-                order_data = response.get("response", {}).get("data", {})
+                response_data = response.get("response", {}).get("data", {})
                 
+                # Handle different response formats
+                if "statuses" in response_data:
+                    statuses = response_data["statuses"]
+                    if len(statuses) > 0:
+                        status = statuses[0]
+                        
+                        if "filled" in status:
+                            # Order was filled immediately
+                            filled_data = status["filled"]
+                            return Order(
+                                oid=filled_data.get("oid"),
+                                coin=coin,
+                                side=OrderSide.BUY if is_buy else OrderSide.SELL,
+                                size=size,
+                                price=float(filled_data.get("avgPx", price or 0)),
+                                order_type=order_type,
+                                status=OrderStatus.FILLED,
+                                filled_size=float(filled_data.get("totalSz", 0)),
+                                remaining_size=0.0,
+                                average_fill_price=float(filled_data.get("avgPx", 0)),
+                                reduce_only=reduce_only
+                            )
+                        elif "resting" in status:
+                            # Order is resting on the book
+                            resting_data = status["resting"]
+                            return Order(
+                                oid=resting_data.get("oid"),
+                                coin=coin,
+                                side=OrderSide.BUY if is_buy else OrderSide.SELL,
+                                size=size,
+                                price=price,
+                                order_type=order_type,
+                                status=OrderStatus.PENDING,
+                                filled_size=0.0,
+                                remaining_size=size,
+                                reduce_only=reduce_only
+                            )
+                
+                # Fallback for other response formats
                 return Order(
-                    oid=order_data.get("oid"),
+                    oid=response_data.get("oid"),
                     coin=coin,
                     side=OrderSide.BUY if is_buy else OrderSide.SELL,
                     size=size,
