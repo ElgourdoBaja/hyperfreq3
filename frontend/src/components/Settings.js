@@ -335,7 +335,7 @@ const Settings = () => {
               <button
                 type="button"
                 onClick={handleTestConnection}
-                disabled={testing || !formData.wallet_address || !formData.api_secret}
+                disabled={testing || !formData.wallet_address || !formData.api_key || !formData.api_secret}
                 className="py-2 px-4 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-white transition-colors"
               >
                 {testing ? <LoadingSpinner size="small" /> : 'Test Connection'}
