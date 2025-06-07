@@ -318,7 +318,7 @@ const Settings = () => {
                 </button>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                The API secret key generated from your Hyperliquid API wallet.
+                The API secret key from your generated Hyperliquid API wallet.
               </p>
             </div>
 
