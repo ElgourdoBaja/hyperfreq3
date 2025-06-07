@@ -359,9 +359,10 @@ const Settings = () => {
                 <li>Copy your <strong>main wallet address</strong> from the top-right dropdown</li>
                 <li>Enter a descriptive name for your API wallet</li>
                 <li>Click "Generate" to create the API wallet</li>
-                <li>Click "Authorize API Wallet" to reveal the API secret key</li>
-                <li>Copy both the <strong>main wallet address</strong> and <strong>API secret key</strong></li>
-                <li>Paste them into the fields above</li>
+                <li>Copy the <strong>API Key</strong> (public identifier)</li>
+                <li>Click "Authorize API Wallet" to reveal the <strong>API Secret Key</strong></li>
+                <li>Copy the <strong>API Secret Key</strong> (private secret)</li>
+                <li>Paste all three values into the fields above</li>
               </ol>
             </div>
 
