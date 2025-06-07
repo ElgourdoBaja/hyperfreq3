@@ -351,10 +351,34 @@ async def get_api_status():
         test_result = None
         if is_configured:
             try:
-                account = await hyperliquid_service.get_account_info()
-                test_result = "Connected successfully"
+                # Test basic API connection with public endpoint
+                import requests
+                test_response = requests.post(
+                    "https://api.hyperliquid.xyz/info",
+                    json={"type": "meta"},
+                    headers={"Content-Type": "application/json"},
+                    timeout=10
+                )
+                
+                if test_response.status_code == 200:
+                    test_result = "✅ API connection successful"
+                    
+                    # Try to get user account info if credentials are provided
+                    try:
+                        account = await hyperliquid_service.get_account_info()
+                        if account and account.address:
+                            test_result = f"✅ Connected successfully to account {account.address[:8]}...{account.address[-8:]}"
+                        else:
+                            test_result = "⚠️ API connected but could not verify account"
+                    except Exception as e:
+                        test_result = f"⚠️ API connected but authentication failed: {str(e)}"
+                else:
+                    test_result = f"❌ API connection failed: HTTP {test_response.status_code}"
+                    
             except Exception as e:
-                test_result = f"Connection failed: {str(e)}"
+                test_result = f"❌ Connection failed: {str(e)}"
+        else:
+            test_result = "⚠️ API credentials not configured"
         
         return APIResponse(
             success=True,
@@ -362,11 +386,21 @@ async def get_api_status():
             data={
                 "is_configured": is_configured,
                 "environment": hyperliquid_service.environment,
-                "test_result": test_result
+                "test_result": test_result,
+                "wallet_address": hyperliquid_service.wallet_address[:8] + "..." + hyperliquid_service.wallet_address[-8:] if hyperliquid_service.wallet_address else None
             }
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return APIResponse(
+            success=False,
+            message="Failed to check API status",
+            error=str(e),
+            data={
+                "is_configured": False,
+                "environment": "unknown",
+                "test_result": f"❌ Error checking status: {str(e)}"
+            }
+        )
 
 # WebSocket endpoint for real-time data
 @app.websocket("/api/ws")
