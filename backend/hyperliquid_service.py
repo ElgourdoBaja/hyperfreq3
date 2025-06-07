@@ -112,17 +112,15 @@ class HyperliquidService:
         
         try:
             print("Account: Using real Hyperliquid API data")
-            user_state = self.info.user_state(self.exchange.wallet.address)
+            
+            # Use the wallet address from settings, not derived from private key
+            target_wallet = self.wallet_address
+            print(f"Querying account info for wallet: {target_wallet}")
+            
+            user_state = self.info.user_state(target_wallet)
             
             # Debug: Print the raw user_state response
             print(f"Raw user_state response: {json.dumps(user_state, indent=2)}")
-            
-            # Also try to get spot clearinghouse state
-            try:
-                spot_state = self.info.spot_clearinghouse_state(self.exchange.wallet.address)
-                print(f"Raw spot_state response: {json.dumps(spot_state, indent=2)}")
-            except Exception as spot_e:
-                print(f"Could not fetch spot state: {spot_e}")
             
             # Get account value from marginSummary
             margin_summary = user_state.get("marginSummary", {})
@@ -137,7 +135,7 @@ class HyperliquidService:
                 
                 spot_response = requests.post(
                     "https://api.hyperliquid.xyz/info",
-                    json={"type": "spotClearinghouseState", "user": self.exchange.wallet.address},
+                    json={"type": "spotClearinghouseState", "user": target_wallet},
                     headers={"Content-Type": "application/json"}
                 )
                 
@@ -165,7 +163,7 @@ class HyperliquidService:
             total_withdrawable = max(withdrawable, spot_balance)
             
             account = Account(
-                address=self.exchange.wallet.address,
+                address=target_wallet,
                 account_value=total_account_value,
                 margin_summary=margin_summary,
                 cross_margin_summary=user_state.get("crossMarginSummary", {}),
