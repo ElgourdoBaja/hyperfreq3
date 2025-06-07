@@ -79,7 +79,11 @@ const Settings = () => {
       if (response.data.success) {
         setMessage({ type: 'success', text: 'Settings saved successfully!' });
         setSettings(response.data.data);
-        checkApiStatus(); // Refresh API status
+        
+        // Automatically refresh API status after saving
+        setTimeout(() => {
+          checkApiStatus();
+        }, 1000);
       } else {
         setMessage({ type: 'error', text: response.data.message || 'Failed to save settings' });
       }
