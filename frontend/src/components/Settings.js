@@ -14,6 +14,7 @@ const Settings = () => {
   
   const [formData, setFormData] = useState({
     wallet_address: '',
+    api_key: '',
     api_secret: '',
     environment: 'mainnet'
   });
