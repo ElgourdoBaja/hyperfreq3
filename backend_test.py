@@ -169,6 +169,34 @@ class HypertraderAPITester:
             "api/strategies",
             200
         )
+        
+    def test_place_order(self, coin="SOL", is_buy=True, size=0.01, price=100.0):
+        """Test placing a limit order"""
+        order_data = {
+            "coin": coin,
+            "is_buy": is_buy,
+            "sz": size,
+            "limit_px": price,
+            "order_type": "limit",
+            "reduce_only": False
+        }
+        
+        return self.run_test(
+            f"Place {'Buy' if is_buy else 'Sell'} Order for {coin}",
+            "POST",
+            "api/orders",
+            200,
+            data=order_data
+        )
+
+    def test_cancel_order(self, coin, oid):
+        """Test cancelling an order"""
+        return self.run_test(
+            f"Cancel Order {oid} for {coin}",
+            "DELETE",
+            f"api/orders/{coin}/{oid}",
+            200
+        )
 
     def print_summary(self):
         """Print test summary"""
@@ -220,8 +248,38 @@ def main():
     tester.test_order_book()
     
     # Test order endpoints
-    tester.test_open_orders()
+    open_orders_success, open_orders_data = tester.test_open_orders()
     tester.test_order_history()
+    
+    # Test order placement and cancellation (the main focus of our testing)
+    print("\n🔍 Testing Order Management Workflow...")
+    
+    # Place a test order
+    place_success, place_response = tester.test_place_order(coin="SOL", is_buy=True, size=0.01, price=100.0)
+    
+    if place_success and place_response.get("success"):
+        order_data = place_response.get("data", {})
+        order_id = order_data.get("oid")
+        coin = order_data.get("coin")
+        
+        if order_id and coin:
+            print(f"📝 Order placed successfully with ID: {order_id}")
+            
+            # Wait a moment to ensure order is processed
+            print("⏳ Waiting 2 seconds before cancellation...")
+            time.sleep(2)
+            
+            # Test cancelling the order
+            cancel_success, cancel_response = tester.test_cancel_order(coin, order_id)
+            
+            if cancel_success and cancel_response.get("success"):
+                print(f"🗑️ Order {order_id} cancelled successfully")
+            else:
+                print(f"❌ Failed to cancel order {order_id}")
+        else:
+            print("❌ Order placed but no order ID returned")
+    else:
+        print("❌ Failed to place test order")
     
     # Test strategy endpoints
     tester.test_strategies()
