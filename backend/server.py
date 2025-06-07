@@ -321,9 +321,11 @@ async def update_settings(settings: UserSettings):
         )
         
         # Update environment variables if API credentials changed
-        if settings.api_credentials.wallet_address or settings.api_credentials.api_secret:
+        if settings.api_credentials.wallet_address or settings.api_credentials.api_key or settings.api_credentials.api_secret:
             if settings.api_credentials.wallet_address:
                 os.environ["HYPERLIQUID_WALLET_ADDRESS"] = settings.api_credentials.wallet_address
+            if settings.api_credentials.api_key:
+                os.environ["HYPERLIQUID_API_KEY"] = settings.api_credentials.api_key
             if settings.api_credentials.api_secret:
                 os.environ["HYPERLIQUID_API_SECRET"] = settings.api_credentials.api_secret
             os.environ["HYPERLIQUID_ENV"] = settings.api_credentials.environment
