@@ -44,7 +44,9 @@ class HyperliquidService:
                 
                 # Initialize Exchange for trading (needs private key)
                 # Note: We pass the private key, but we'll query using the target wallet address
-                self.exchange = Exchange(None, self.base_url, wallet=self.api_secret)
+                from eth_account import Account
+                wallet_account = Account.from_key(self.api_secret)
+                self.exchange = Exchange(wallet_account, self.base_url)
                 
                 print(f"- Exchange Wallet (from private key): {self.exchange.wallet.address}")
                 print(f"- Target Query Wallet: {self.wallet_address}")
