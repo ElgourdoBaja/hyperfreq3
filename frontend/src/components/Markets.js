@@ -41,9 +41,8 @@ const MarketList = () => {
 
   const fetchMarketData = async () => {
     if (coins.length > 0) {
-      // Only fetch market data for displayed coins for better performance
-      const displayedCoins = filteredAndSortedCoins.slice(0, 50);
-      await fetchMarketDataForCoins(displayedCoins);
+      // Fetch market data for first 50 coins for better performance
+      await fetchMarketDataForCoins(coins.slice(0, 50));
     }
   };
 
