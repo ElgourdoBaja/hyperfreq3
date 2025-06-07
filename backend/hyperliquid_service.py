@@ -111,10 +111,10 @@ class HyperliquidService:
         
         try:
             print("Account: Using real Hyperliquid API data")
-            user_state = self.info.user_state(self.wallet_address)
+            user_state = self.info.user_state(self.exchange.account.address)
             
             account = Account(
-                address=self.wallet_address,
+                address=self.exchange.account.address,
                 account_value=float(user_state.get("marginSummary", {}).get("accountValue", 0)),
                 margin_summary=user_state.get("marginSummary", {}),
                 cross_margin_summary=user_state.get("crossMarginSummary", {}),
