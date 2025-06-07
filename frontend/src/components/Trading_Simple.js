@@ -20,19 +20,28 @@ const Trading = () => {
   const coins = ['BTC', 'ETH', 'SOL', 'AVAX', 'MATIC', 'LINK'];
 
   useEffect(() => {
-    fetchMarketData();
+    fetchTradingData();
   }, [orderForm.coin]);
 
-  const fetchMarketData = async () => {
+  const fetchTradingData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/market/${orderForm.coin}`);
-      if (response.data.success) {
-        setMarketData(response.data.data);
+      
+      // Fetch market data
+      const marketResponse = await axios.get(`/api/market/${orderForm.coin}`);
+      if (marketResponse.data.success) {
+        setMarketData(marketResponse.data.data);
       }
+
+      // Fetch open orders
+      const ordersResponse = await axios.get('/api/orders/open');
+      if (ordersResponse.data.success) {
+        setOpenOrders(ordersResponse.data.data);
+      }
+
     } catch (error) {
-      console.error('Error fetching market data:', error);
-      setMessage({ type: 'error', text: 'Failed to fetch market data' });
+      console.error('Error fetching trading data:', error);
+      setMessage({ type: 'error', text: 'Failed to fetch trading data' });
     } finally {
       setLoading(false);
     }
