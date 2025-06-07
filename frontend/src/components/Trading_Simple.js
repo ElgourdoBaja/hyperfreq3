@@ -149,7 +149,7 @@ const Trading = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Order Form */}
         <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
           <h2 className="text-xl font-bold text-white mb-4">Place Order</h2>
