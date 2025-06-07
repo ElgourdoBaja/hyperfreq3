@@ -394,4 +394,4 @@ const MarketList = () => {
   );
 };
 
-export default MarketList;
+export default Markets;
