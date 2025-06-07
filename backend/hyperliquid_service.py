@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from hyperliquid.info import Info
 from hyperliquid.exchange import Exchange
 from hyperliquid.utils import constants
+from eth_account import Account
 import random
 import uuid
 import sys
