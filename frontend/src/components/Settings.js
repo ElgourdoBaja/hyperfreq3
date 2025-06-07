@@ -14,8 +14,8 @@ const Settings = () => {
   
   const [formData, setFormData] = useState({
     wallet_address: '',
-    private_key: '',
-    environment: 'testnet'
+    api_secret: '',
+    environment: 'mainnet'
   });
 
   useEffect(() => {
