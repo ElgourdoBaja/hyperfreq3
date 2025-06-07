@@ -28,8 +28,9 @@ const MarketList = () => {
         const allCoins = coinsResponse.data.data;
         setCoins(allCoins);
         
-        // Fetch market data for top 50 coins
-        await fetchMarketDataForCoins(allCoins.slice(0, 50));
+        // Fetch market data for top 20 coins initially for faster loading
+        const topCoins = allCoins.slice(0, 20);
+        await fetchMarketDataForCoins(topCoins);
       }
     } catch (error) {
       console.error('Error fetching coins data:', error);
