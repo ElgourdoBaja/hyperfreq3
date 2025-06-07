@@ -330,11 +330,16 @@ async def update_settings(settings: UserSettings):
                 os.environ["HYPERLIQUID_API_SECRET"] = settings.api_credentials.api_secret.strip()
             os.environ["HYPERLIQUID_ENV"] = settings.api_credentials.environment
             
-            # Reinitialize service with new credentials
+            # Reinitialize service with new credentials from database
             print("Reinitializing Hyperliquid service with new credentials...")
             global hyperliquid_service
             from hyperliquid_service import HyperliquidService
-            hyperliquid_service = HyperliquidService()
+            hyperliquid_service = HyperliquidService(
+                wallet_address=settings.api_credentials.wallet_address,
+                api_key=settings.api_credentials.api_key,
+                api_secret=settings.api_credentials.api_secret,
+                environment=settings.api_credentials.environment
+            )
             print(f"Service reinitialized. Configured: {hyperliquid_service.is_configured}")
         
         return APIResponse(
