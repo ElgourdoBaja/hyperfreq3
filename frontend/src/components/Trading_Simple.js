@@ -77,6 +77,7 @@ const Trading = () => {
       if (response.data.success) {
         setMessage({ type: 'success', text: 'Order placed successfully!' });
         setOrderForm(prev => ({ ...prev, size: '', price: '' }));
+        fetchTradingData(); // Refresh data to show new orders
       } else {
         setMessage({ type: 'error', text: response.data.message || 'Failed to place order' });
       }
