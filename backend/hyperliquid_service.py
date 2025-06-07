@@ -500,14 +500,46 @@ class HyperliquidService:
             return self._generate_mock_orders(5)
     
     async def get_order_history(self, limit: int = 50) -> List[Order]:
-        """Get order history"""
+        """Get order history from real Hyperliquid API"""
         if not self.is_configured:
             return self._generate_mock_orders(limit)
         
         try:
-            # Note: This would need to be implemented based on Hyperliquid's API
-            # For now, return mock data
-            return self._generate_mock_orders(limit)
+            import requests
+            
+            # Get user fills (trade history) from Hyperliquid
+            fills_response = requests.post(
+                "https://api.hyperliquid.xyz/info",
+                json={"type": "userFills", "user": self.wallet_address},
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if fills_response.status_code == 200:
+                fills_data = fills_response.json()
+                
+                orders = []
+                for fill in fills_data[:limit]:
+                    # Convert Hyperliquid fill to our Order format
+                    orders.append(Order(
+                        oid=fill.get("oid"),
+                        coin=fill.get("coin"),
+                        side=OrderSide.BUY if fill.get("side") == "B" else OrderSide.SELL,
+                        size=float(fill.get("sz", 0)),
+                        price=float(fill.get("px", 0)),
+                        order_type=OrderType.LIMIT,  # Most fills are from limit orders
+                        status=OrderStatus.FILLED,
+                        filled_size=float(fill.get("sz", 0)),
+                        remaining_size=0.0,
+                        average_fill_price=float(fill.get("px", 0)),
+                        created_at=datetime.fromtimestamp(fill.get("time", 0) / 1000),
+                        updated_at=datetime.fromtimestamp(fill.get("time", 0) / 1000)
+                    ))
+                
+                print(f"Fetched {len(orders)} fills from order history")
+                return orders
+            else:
+                print(f"Failed to fetch order history: {fills_response.status_code}")
+                return self._generate_mock_orders(limit)
             
         except Exception as e:
             print(f"Error fetching order history: {e}")
