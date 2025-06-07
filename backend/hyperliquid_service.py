@@ -20,10 +20,10 @@ from models import (
 class HyperliquidService:
     def __init__(self):
         self.wallet_address = os.getenv("HYPERLIQUID_WALLET_ADDRESS", "")
-        self.private_key = os.getenv("HYPERLIQUID_PRIVATE_KEY", "")
+        self.api_secret = os.getenv("HYPERLIQUID_API_SECRET", "")
         self.environment = os.getenv("HYPERLIQUID_ENV", "testnet")
-        self.is_configured = bool(self.wallet_address and self.private_key and 
-                                self.wallet_address != "" and self.private_key != "")
+        self.is_configured = bool(self.wallet_address and self.api_secret and 
+                                self.wallet_address != "" and self.api_secret != "")
         
         # Initialize API clients
         if self.is_configured:
@@ -33,7 +33,7 @@ class HyperliquidService:
                     else constants.MAINNET_API_URL
                 )
                 self.info = Info(self.base_url, skip_ws=True)
-                self.exchange = Exchange(None, self.base_url, wallet=self.private_key)
+                self.exchange = Exchange(None, self.base_url, wallet=self.api_secret)
                 self.ws_url = (
                     os.getenv("HYPERLIQUID_WS_TESTNET") if self.environment == "testnet"
                     else os.getenv("HYPERLIQUID_WS_MAINNET")
