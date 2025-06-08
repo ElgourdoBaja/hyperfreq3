@@ -20,7 +20,6 @@ axios.defaults.baseURL = API_BASE_URL;
 function App() {
   const [loading, setLoading] = useState(true);
   const [apiStatus, setApiStatus] = useState(null);
-  const [currentPage, setCurrentPage] = useState('dashboard');
 
   useEffect(() => {
     // Check API status on startup
