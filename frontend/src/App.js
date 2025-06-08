@@ -77,7 +77,7 @@ function App() {
 
         <div className="flex h-screen pt-16">
           {/* Navigation Sidebar */}
-          <Navigation currentPage={currentPage} setCurrentPage={setCurrentPage} />
+          <Navigation />
 
           {/* Main Content */}
           <main className="flex-1 overflow-y-auto bg-gray-900">
