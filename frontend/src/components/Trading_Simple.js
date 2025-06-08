@@ -121,6 +121,20 @@ const Trading = () => {
     }) || '0.00'}`;
   };
 
+  // Show initial loading state
+  if (loading && !marketData) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-white">Trading</h1>
+        </div>
+        <div className="flex justify-center py-12">
+          <LoadingSpinner size="large" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
