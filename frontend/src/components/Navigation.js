@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 
 const Navigation = () => {
-  const navigate = useNavigate();
   const location = useLocation();
 
   const menuItems = [
@@ -33,9 +32,9 @@ const Navigation = () => {
             
             return (
               <li key={item.id}>
-                <button
-                  onClick={() => navigate(item.path)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                <Link
+                  to={item.path}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors block ${
                     isActive
                       ? 'bg-blue-600 text-white'
                       : 'text-gray-300 hover:bg-gray-700 hover:text-white'
@@ -43,7 +42,7 @@ const Navigation = () => {
                 >
                   <Icon size={20} />
                   <span className="font-medium">{item.label}</span>
-                </button>
+                </Link>
               </li>
             );
           })}
