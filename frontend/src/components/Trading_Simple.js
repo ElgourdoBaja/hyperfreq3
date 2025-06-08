@@ -4,6 +4,7 @@ import { TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 
 const Trading = () => {
+  console.log('Trading component loaded'); // Debug log
   const [orderForm, setOrderForm] = useState({
     coin: 'BTC',
     side: 'long',
