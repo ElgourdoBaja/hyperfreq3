@@ -1,0 +1,51 @@
+# Hypertrader 1.5 - Desktop Application Requirements
+
+# Core dependencies
+requests>=2.31.0
+urllib3>=2.0.0
+websockets>=12.0
+
+# Data handling
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Database
+sqlite3  # Built into Python
+
+# Configuration and utilities
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+
+# Date/time handling
+python-dateutil>=2.8.0
+
+# Cryptography (for API authentication)
+cryptography>=41.0.0
+eth-account>=0.9.0
+web3>=6.0.0
+
+# HTTP client
+aiohttp>=3.8.0
+
+# JSON handling
+ujson>=5.8.0
+
+# Threading and async
+asyncio  # Built into Python
+threading  # Built into Python
+
+# Hyperliquid SDK
+hyperliquid-python-sdk>=1.0.0
+
+# GUI (tkinter is built into Python)
+# tkinter - included with Python
+# Additional GUI enhancements
+Pillow>=10.0.0  # For image handling in tkinter
+
+# Optional: For advanced charting (if needed)
+matplotlib>=3.7.0
+mplfinance>=0.12.0
+
+# Development and testing (optional)
+pytest>=7.4.0
+black>=23.0.0
