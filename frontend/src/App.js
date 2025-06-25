@@ -6,7 +6,7 @@ import './App.css';
 // Import components
 import Navigation from './components/Navigation';
 import Dashboard from './components/Dashboard';
-import TestTrading from './components/TestTrading';
+import Trading from './components/Trading';
 import Portfolio from './components/Portfolio';
 import Strategies from './components/Strategies';
 import Settings from './components/Settings';
