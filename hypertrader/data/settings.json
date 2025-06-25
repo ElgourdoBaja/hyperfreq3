@@ -1,0 +1,45 @@
+{
+  "app_version": "1.5.0",
+  "first_run": true,
+  "logging_level": "INFO",
+  "auto_save": true,
+  "auto_save_interval": 300,
+  "ui": {
+    "theme": "dark",
+    "window_width": 1200,
+    "window_height": 800,
+    "window_maximized": false,
+    "show_notifications": true,
+    "sound_enabled": true,
+    "refresh_interval": 5000
+  },
+  "trading": {
+    "default_order_size": 0.1,
+    "default_leverage": 1,
+    "risk_limit_percent": 2.0,
+    "auto_cancel_orders": false,
+    "confirm_orders": true
+  },
+  "data": {
+    "store_trade_history": true,
+    "max_history_days": 30,
+    "cache_market_data": true,
+    "backup_enabled": true
+  },
+  "api": {
+    "hyperliquid": {
+      "wallet_address": "",
+      "api_key": "",
+      "api_secret": "",
+      "environment": "mainnet",
+      "timeout": 30,
+      "retry_attempts": 3
+    }
+  },
+  "advanced": {
+    "debug_mode": false,
+    "developer_mode": false,
+    "api_rate_limit": 10,
+    "websocket_reconnect": true
+  }
+}
