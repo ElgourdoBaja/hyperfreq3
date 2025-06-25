@@ -6,8 +6,7 @@ import './App.css';
 // Import components
 import Navigation from './components/Navigation';
 import Dashboard from './components/Dashboard';
-import Markets from './components/Markets_Simple';
-import Trading from './components/Trading_Simple';
+import Trading from './components/Trading';
 import Portfolio from './components/Portfolio';
 import Strategies from './components/Strategies';
 import Settings from './components/Settings';
