@@ -82,7 +82,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/trading" element={<TestTrading />} />
+              <Route path="/trading" element={<Trading />} />
               <Route path="/portfolio" element={<Portfolio />} />
               <Route path="/strategies" element={<Strategies />} />
               <Route path="/settings" element={<Settings />} />
