@@ -230,13 +230,13 @@ echo ^</body^>
 echo ^</html^>
 ) > public\index.html
 
-:: Create App.js
+:: Create App.js with proper syntax
 (
 echo import React, { useState, useEffect } from 'react';
 echo import axios from 'axios';
 echo.
 echo function App^(^) {
-echo   const [status, setStatus] = useState^('Loading..'^);
+echo   const [status, setStatus] = useState^('Loading...'^);
 echo   const [portfolio, setPortfolio] = useState^(null^);
 echo   const [connected, setConnected] = useState^(false^);
 echo.
@@ -249,41 +249,36 @@ echo.
 echo   const checkConnection = async ^(^) =^> {
 echo     try {
 echo       await axios.get^('http://localhost:8001/api/health'^);
-echo       setStatus^('✅ Connected to Backend!'^);
+echo       setStatus^('Connected to Backend!'^);
 echo       setConnected^(true^);
 echo       
 echo       const portfolioResponse = await axios.get^('http://localhost:8001/api/portfolio'^);
 echo       setPortfolio^(portfolioResponse.data.data^);
 echo     } catch ^(error^) {
-echo       setStatus^('❌ Backend Connection Failed'^);
+echo       setStatus^('Backend Connection Failed'^);
 echo       setConnected^(false^);
 echo     }
 echo   };
 echo.
 echo   return ^(
-echo     ^<div className="container"^>
-echo       ^<h1^>🚀 Hypertrader 1.5 Trading Platform^</h1^>
-echo       
-echo       ^<div className={`status ${connected ? 'connected' : 'disconnected'}`}^>
-echo         ^<strong^>Status: {status}^</strong^>
-echo       ^</div^>
-echo.
-echo       {connected ^&^& portfolio ^&^& ^(
-echo         ^<div className="card"^>
-echo           ^<h2^>📊 Portfolio Overview^</h2^>
-echo           ^<p^>^<strong^>Account Value:^</strong^> ${portfolio.account_value}^</p^>
-echo           ^<p^>^<strong^>Available Balance:^</strong^> ${portfolio.available_balance}^</p^>
-echo           ^<p^>^<strong^>Total PnL:^</strong^> ${portfolio.total_pnl}^</p^>
-echo         ^</div^>
-echo       ^)}
-echo       
-echo       ^<div className="card"^>
-echo         ^<h2^>🔗 API Links^</h2^>
-echo         ^<p^>^<a href="http://localhost:8001/api/health" target="_blank"^>Health Check^</a^>^</p^>
-echo         ^<p^>^<a href="http://localhost:8001/api/portfolio" target="_blank"^>Portfolio API^</a^>^</p^>
-echo         ^<button className="btn" onClick={checkConnection}^>🔄 Refresh^</button^>
-echo       ^</div^>
-echo     ^</div^>
+echo     React.createElement^('div', { className: 'container' },
+echo       React.createElement^('h1', null, 'Hypertrader 1.5 Trading Platform'^),
+echo       React.createElement^('div', { 
+echo         className: connected ? 'status connected' : 'status disconnected' 
+echo       }, React.createElement^('strong', null, 'Status: ' + status^)^),
+echo       connected ^&^& portfolio ^&^& React.createElement^('div', { className: 'card' },
+echo         React.createElement^('h2', null, 'Portfolio Overview'^),
+echo         React.createElement^('p', null, React.createElement^('strong', null, 'Account Value: '^), '$' + portfolio.account_value^),
+echo         React.createElement^('p', null, React.createElement^('strong', null, 'Available Balance: '^), '$' + portfolio.available_balance^),
+echo         React.createElement^('p', null, React.createElement^('strong', null, 'Total PnL: '^), '$' + portfolio.total_pnl^)
+echo       ^),
+echo       React.createElement^('div', { className: 'card' },
+echo         React.createElement^('h2', null, 'API Links'^),
+echo         React.createElement^('p', null, React.createElement^('a', { href: 'http://localhost:8001/api/health', target: '_blank' }, 'Health Check'^)^),
+echo         React.createElement^('p', null, React.createElement^('a', { href: 'http://localhost:8001/api/portfolio', target: '_blank' }, 'Portfolio API'^)^),
+echo         React.createElement^('button', { className: 'btn', onClick: checkConnection }, 'Refresh'^)
+echo       ^)
+echo     ^)
 echo   ^);
 echo }
 echo.
