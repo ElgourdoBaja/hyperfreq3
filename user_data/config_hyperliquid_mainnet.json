@@ -1,0 +1,135 @@
+{
+    "$schema": "https://schema.freqtrade.io/schema.json",
+    "max_open_trades": 10,
+    "stake_currency": "USDC",
+    "stake_amount": 10.00,
+    "tradable_balance_ratio": 0.95,
+    "fiat_display_currency": "USD",
+    "amount_reserve_percent": 0.05,
+    "dry_run": false,
+    "dry_run_wallet": 1000,
+    "cancel_open_orders_on_exit": false,
+    "timeframe": "1m",
+    "trailing_stop": false,
+    "trailing_stop_positive": 0.005,
+    "trailing_stop_positive_offset": 0.0051,
+    "trailing_only_offset_is_reached": false,
+    "use_exit_signal": true,
+    "exit_profit_only": false,
+    "exit_profit_offset": 0.0,
+    "ignore_roi_if_entry_signal": false,
+    "ignore_buying_expired_candle_after": 300,
+    "trading_mode": "futures",
+    "margin_mode": "isolated",
+    "trading_mode": "futures",
+    "margin_mode": "isolated",
+    "minimal_roi": {
+        "0": 0.30
+    },
+    "stoploss": -0.10,
+    "unfilledtimeout": {
+        "entry": 10,
+        "exit": 10,
+        "exit_timeout_count": 0,
+        "unit": "minutes"
+    },
+    "entry_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1,
+        "price_last_balance": 0.0,
+        "check_depth_of_market": {
+            "enabled": false,
+            "bids_to_ask_delta": 1
+        }
+    },
+    "exit_pricing": {
+        "price_side": "same",
+        "use_order_book": true,
+        "order_book_top": 1,
+        "price_last_balance": 0.0
+    },
+    "order_types": {
+        "entry": "limit",
+        "exit": "limit",
+        "emergency_exit": "market",
+        "force_exit": "market",
+        "force_entry": "market",
+        "stoploss": "limit",
+        "stoploss_on_exchange": true,
+        "stoploss_price_type": "last",
+        "stoploss_on_exchange_interval": 60,
+        "stoploss_on_exchange_limit_ratio": 0.99
+    },
+    "order_time_in_force": {
+        "entry": "GTC",
+        "exit": "GTC"
+    },
+    "pairlists": [
+        {
+            "method": "VolumePairList",
+            "number_assets": 50,
+            "sort_key": "quoteVolume",
+            "refresh_period": 1800
+        },
+        {"method": "AgeFilter", "min_days_listed": 1},
+        {"method": "PrecisionFilter"},
+        {"method": "PriceFilter", "low_price_ratio": 0.001, "min_price": 0.000001},
+        {"method": "SpreadFilter", "max_spread_ratio": 0.005}
+    ],
+    "exchange": {
+        "name": "hyperliquid",
+        "key": "0xc617643210fd1af0591649f04560647776f2ba6a",
+        "secret": "0xa2df0be8f3ed00889d3769390cd31c9ea8560d27a4ed217e7ce272843958b394",
+        "password": "",
+        "log_responses": false,
+        "ccxt_config": {
+            "options": {
+                "defaultType": "swap",
+                "walletAddress": "0x78b70c6265F089fd64af7C9b8Fc80e9f371D730A"
+            },
+            "sandbox": false
+        },
+        "ccxt_async_config": {
+            "options": {
+                "defaultType": "swap",
+                "walletAddress": "0x78b70c6265F089fd64af7C9b8Fc80e9f371D730A"
+            },
+            "sandbox": false
+        },
+        "pair_whitelist": [],
+        "pair_blacklist": [],
+        "outdated_offset": 5,
+        "markets_refresh_interval": 60
+    },
+    "leverage_tiers": {},
+    "leverage": 2,
+    "api_server": {
+        "enabled": false,
+        "listen_ip_address": "127.0.0.1",
+        "listen_port": 8080,
+        "verbosity": "error",
+        "enable_openapi": false,
+        "jwt_secret_key": "somethingrandom",
+        "CORS_origins": [],
+        "username": "freqtrader",
+        "password": "SuperSecurePassword",
+        "ws_token": "secret_ws_t0ken."
+    },
+    "bot_name": "HyperFreq",
+    "db_url": "sqlite:///user_data/tradesv3_mainnet.sqlite",
+    "initial_state": "running",
+    "force_entry_enable": false,
+    "internals": {
+        "process_throttle_secs": 5,
+        "heartbeat_interval": 60
+    },
+    "disable_dataframe_checks": false,
+    "strategy": "MovingAverageCrossStrategy",
+    "strategy_path": "user_data/strategies/",
+    "recursive_strategy_search": false,
+    "add_config_files": [],
+    "reduce_df_footprint": false,
+    "dataformat_ohlcv": "feather",
+    "dataformat_trades": "feather"
+}
