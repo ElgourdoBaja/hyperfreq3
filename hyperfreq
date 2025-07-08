@@ -1,0 +1,249 @@
+#!/bin/bash
+
+# HyperFreq - Freqtrade Management Script for Hyperliquid
+# Installed and configured directly on this Linux Mint machine
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Directories
+SCRIPT_DIR="/app"
+USER_DATA_DIR="/app/user_data"
+
+echo -e "${BLUE}==========================================${NC}"
+echo -e "${BLUE}        HyperFreq Management${NC}"
+echo -e "${BLUE}   Freqtrade for Hyperliquid Trading${NC}"
+echo -e "${BLUE}==========================================${NC}"
+echo
+
+# Function to print colored output
+print_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Function to show status
+show_status() {
+    print_info "HyperFreq Status Check:"
+    echo
+    
+    # Check Freqtrade installation
+    if command -v freqtrade &> /dev/null; then
+        print_success "Freqtrade installed: $(freqtrade --version | head -1)"
+    else
+        print_error "Freqtrade not found"
+        return 1
+    fi
+    
+    # Check configurations
+    if [ -f "$USER_DATA_DIR/config_hyperliquid_testnet.json" ]; then
+        print_success "Testnet config: Available"
+    else
+        print_error "Testnet config: Missing"
+    fi
+    
+    if [ -f "$USER_DATA_DIR/config_hyperliquid_mainnet.json" ]; then
+        print_success "Mainnet config: Available"
+    else
+        print_error "Mainnet config: Missing"
+    fi
+    
+    # Check strategy
+    if [ -f "$USER_DATA_DIR/strategies/MovingAverageCrossStrategy.py" ]; then
+        print_success "Strategy: MovingAverageCrossStrategy.py"
+    else
+        print_error "Strategy: Missing"
+    fi
+    
+    # Check API connection
+    print_info "Testing Hyperliquid API connection..."
+    if python /app/test_hyperliquid_freqtrade.py > /dev/null 2>&1; then
+        print_success "API connection: Working"
+    else
+        print_warning "API connection: Check credentials"
+    fi
+    
+    echo
+}
+
+# Function to test connection
+test_connection() {
+    print_info "Running Hyperliquid API connection test..."
+    python /app/test_hyperliquid_freqtrade.py
+}
+
+# Function to run testnet
+run_testnet() {
+    print_warning "Starting HyperFreq on TESTNET"
+    print_info "Configuration: Testnet mode (sandbox)"
+    print_info "Position size: $10.00 per trade"
+    print_info "Stop loss: 10% | Take profit: 30% | Leverage: 2x"
+    echo
+    
+    cd "$SCRIPT_DIR"
+    freqtrade trade --config "$USER_DATA_DIR/config_hyperliquid_testnet.json" --verbosity 2
+}
+
+# Function to run mainnet
+run_mainnet() {
+    print_error "⚠️  DANGER: LIVE TRADING WITH REAL FUNDS ⚠️"
+    print_warning "This will trade with REAL money on Hyperliquid mainnet"
+    echo
+    read -p "Type 'YES' to confirm live trading: " confirm
+    
+    if [ "$confirm" != "YES" ]; then
+        print_info "Aborted. Use 'testnet' for safe testing."
+        return 1
+    fi
+    
+    print_warning "Starting HyperFreq on MAINNET - LIVE TRADING"
+    print_info "Configuration: Mainnet (real funds)"
+    print_info "Position size: $10.00 per trade"
+    print_info "Stop loss: 10% | Take profit: 30% | Leverage: 2x"
+    echo
+    
+    cd "$SCRIPT_DIR"
+    freqtrade trade --config "$USER_DATA_DIR/config_hyperliquid_mainnet.json" --verbosity 2
+}
+
+# Function to test pairlist
+test_pairlist() {
+    local env="$1"
+    local config_file
+    
+    if [ "$env" = "testnet" ]; then
+        config_file="$USER_DATA_DIR/config_hyperliquid_testnet.json"
+        print_info "Testing pairlist configuration (testnet)..."
+    else
+        config_file="$USER_DATA_DIR/config_hyperliquid_mainnet.json"
+        print_info "Testing pairlist configuration (mainnet)..."
+    fi
+    
+    cd "$SCRIPT_DIR"
+    timeout 60s freqtrade test-pairlist --config "$config_file" | head -20
+    print_info "Pairlist test completed (showing first 20 pairs)"
+}
+
+# Function to download data
+download_data() {
+    local env="$1"
+    local config_file
+    
+    if [ "$env" = "testnet" ]; then
+        config_file="$USER_DATA_DIR/config_hyperliquid_testnet.json"
+    else
+        config_file="$USER_DATA_DIR/config_hyperliquid_mainnet.json"
+    fi
+    
+    print_info "Downloading historical data for backtesting..."
+    cd "$SCRIPT_DIR"
+    freqtrade download-data --config "$config_file" --timerange 20241201- --timeframes 1m 5m 15m
+}
+
+# Function to run backtest
+run_backtest() {
+    local env="$1"
+    local config_file
+    
+    if [ "$env" = "testnet" ]; then
+        config_file="$USER_DATA_DIR/config_hyperliquid_testnet.json"
+    else
+        config_file="$USER_DATA_DIR/config_hyperliquid_mainnet.json"
+    fi
+    
+    print_info "Running backtest with MovingAverageCrossStrategy..."
+    cd "$SCRIPT_DIR"
+    freqtrade backtesting --config "$config_file" --strategy MovingAverageCrossStrategy --timerange 20241201-
+}
+
+# Main menu
+show_menu() {
+    echo "Available commands:"
+    echo
+    echo "1) status         - Show system status"
+    echo "2) test           - Test Hyperliquid API connection"
+    echo "3) testnet        - Start trading on testnet (safe)"
+    echo "4) mainnet        - Start trading on mainnet (LIVE FUNDS)"
+    echo "5) pairlist-test  - Test 50 highest volume pairs (testnet)"
+    echo "6) download-data  - Download historical data for backtesting"
+    echo "7) backtest       - Run strategy backtest"
+    echo "8) exit           - Exit"
+    echo
+    read -p "Enter your choice [1-8]: " choice
+    
+    case $choice in
+        1) show_status ;;
+        2) test_connection ;;
+        3) run_testnet ;;
+        4) run_mainnet ;;
+        5) test_pairlist "testnet" ;;
+        6) download_data "testnet" ;;
+        7) run_backtest "testnet" ;;
+        8) print_info "Goodbye!"; exit 0 ;;
+        *) print_error "Invalid choice!"; show_menu ;;
+    esac
+}
+
+# Parse command line arguments
+case "${1:-}" in
+    "status")
+        show_status
+        ;;
+    "test")
+        test_connection
+        ;;
+    "testnet")
+        run_testnet
+        ;;
+    "mainnet")
+        run_mainnet
+        ;;
+    "pairlist")
+        test_pairlist "testnet"
+        ;;
+    "download")
+        download_data "testnet"
+        ;;
+    "backtest")
+        run_backtest "testnet"
+        ;;
+    "help"|"-h"|"--help")
+        echo "Usage: $0 [command]"
+        echo
+        echo "Commands:"
+        echo "  status      Show system status and check installation"
+        echo "  test        Test Hyperliquid API connection"
+        echo "  testnet     Start trading on testnet (safe testing)"
+        echo "  mainnet     Start trading on mainnet (LIVE FUNDS)"
+        echo "  pairlist    Test 50 highest volume pairs selection"
+        echo "  download    Download historical data for backtesting"
+        echo "  backtest    Run strategy backtest"
+        echo
+        echo "If no command is provided, the interactive menu will be shown."
+        ;;
+    "")
+        show_menu
+        ;;
+    *)
+        print_error "Unknown command: $1"
+        print_info "Use '$0 help' to see available commands"
+        exit 1
+        ;;
+esac
