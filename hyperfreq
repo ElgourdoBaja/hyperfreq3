@@ -261,6 +261,8 @@ case "${1:-}" in
         echo "  test        Test Hyperliquid API connection"
         echo "  testnet     Start trading on testnet (safe testing)"
         echo "  mainnet     Start trading on mainnet (LIVE FUNDS)"
+        echo "  monitor     Monitor live trading activity"
+        echo "  stop        Stop trading bot"
         echo "  pairlist    Test 50 highest volume pairs selection"
         echo "  download    Download historical data for backtesting"
         echo "  backtest    Run strategy backtest"
