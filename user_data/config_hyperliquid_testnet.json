@@ -85,12 +85,18 @@
                 "defaultType": "swap",
                 "walletAddress": "0x78b70c6265F089fd64af7C9b8Fc80e9f371D730A"
             },
+            "params": {
+                "user": "0x78b70c6265F089fd64af7C9b8Fc80e9f371D730A"
+            },
             "sandbox": true
         },
         "ccxt_async_config": {
             "options": {
                 "defaultType": "swap",
                 "walletAddress": "0x78b70c6265F089fd64af7C9b8Fc80e9f371D730A"
+            },
+            "params": {
+                "user": "0x78b70c6265F089fd64af7C9b8Fc80e9f371D730A"
             },
             "sandbox": true
         },
