@@ -42,7 +42,7 @@ class MovingAverageCrossStrategy(IStrategy):
     ignore_roi_if_entry_signal = False
 
     # Number of candles the strategy requires before producing valid signals
-    startup_candle_count: int = 30
+    startup_candle_count: int = 0
 
     # Optional order type mapping.
     order_types = {
