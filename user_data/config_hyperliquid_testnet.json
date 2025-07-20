@@ -75,7 +75,7 @@
         {"method": "PriceFilter", "low_price_ratio": 0.001, "min_price": 0.000001}
     ],
     "exchange": {
-        "name": "hyperliquid",
+        "name": "hyperliquid_fixed",
         "key": "0xc617643210fd1af0591649f04560647776f2ba6a",
         "secret": "0xa2df0be8f3ed00889d3769390cd31c9ea8560d27a4ed217e7ce272843958b394",
         "password": "",
