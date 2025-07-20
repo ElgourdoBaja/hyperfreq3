@@ -207,10 +207,12 @@ show_menu() {
         2) test_connection ;;
         3) run_testnet ;;
         4) run_mainnet ;;
-        5) test_pairlist "testnet" ;;
-        6) download_data "testnet" ;;
-        7) run_backtest "testnet" ;;
-        8) print_info "Goodbye!"; exit 0 ;;
+        5) monitor_trading ;;
+        6) pkill -f "freqtrade trade"; print_info "Trading bot stopped." ;;
+        7) test_pairlist "testnet" ;;
+        8) download_data "testnet" ;;
+        9) run_backtest "testnet" ;;
+        10) print_info "Goodbye!"; exit 0 ;;
         *) print_error "Invalid choice!"; show_menu ;;
     esac
 }
