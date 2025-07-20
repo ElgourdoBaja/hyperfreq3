@@ -65,8 +65,14 @@
     },
     "pairlists": [
         {
-            "method": "StaticPairList"
-        }
+            "method": "VolumePairList",
+            "number_assets": 50,
+            "sort_key": "quoteVolume",
+            "refresh_period": 1800
+        },
+        {"method": "AgeFilter", "min_days_listed": 1},
+        {"method": "PrecisionFilter"},
+        {"method": "PriceFilter", "low_price_ratio": 0.001, "min_price": 0.000001}
     ],
     "exchange": {
         "name": "hyperliquid",
