@@ -190,15 +190,17 @@ show_menu() {
     echo "Available commands:"
     echo
     echo "1) status         - Show system status"
-    echo "2) test           - Test Hyperliquid API connection"
+    echo "2) test           - Test Hyperliquid API connection"  
     echo "3) testnet        - Start trading on testnet (safe)"
     echo "4) mainnet        - Start trading on mainnet (LIVE FUNDS)"
-    echo "5) pairlist-test  - Test 50 highest volume pairs (testnet)"
-    echo "6) download-data  - Download historical data for backtesting"
-    echo "7) backtest       - Run strategy backtest"
-    echo "8) exit           - Exit"
+    echo "5) monitor        - Monitor live trading activity"
+    echo "6) stop           - Stop trading bot"
+    echo "7) pairlist-test  - Test 50 highest volume pairs (testnet)"
+    echo "8) download-data  - Download historical data for backtesting"
+    echo "9) backtest       - Run strategy backtest"
+    echo "10) exit          - Exit"
     echo
-    read -p "Enter your choice [1-8]: " choice
+    read -p "Enter your choice [1-10]: " choice
     
     case $choice in
         1) show_status ;;
