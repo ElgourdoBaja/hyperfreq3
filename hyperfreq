@@ -83,22 +83,10 @@ show_status() {
     echo
 }
 
-# Function to monitor live trading
-monitor_trading() {
-    print_info "Monitoring HyperFreq live trading..."
-    print_warning "Press Ctrl+C to stop monitoring"
-    echo
-    
-    if pgrep -f "freqtrade trade" > /dev/null; then
-        print_success "HyperFreq is running! Showing live activity..."
-        echo
-        
-        # Show last 20 log entries and follow
-        tail -f "$USER_DATA_DIR/logs/freqtrade.log" 2>/dev/null || tail -f /app/hyperfreq_testnet.log
-    else
-        print_error "HyperFreq is not currently running"
-        print_info "Start trading with: ./hyperfreq testnet"
-    fi
+# Function to test connection
+test_connection() {
+    print_info "Running Hyperliquid API connection test..."
+    python /app/test_hyperliquid_freqtrade.py
 }
 
 # Function to run testnet
