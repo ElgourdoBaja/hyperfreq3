@@ -48,12 +48,12 @@
         "price_last_balance": 0.0
     },
     "order_types": {
-        "entry": "limit",
-        "exit": "limit",
+        "entry": "market",
+        "exit": "market",
         "emergency_exit": "market",
         "force_exit": "market",
         "force_entry": "market",
-        "stoploss": "limit",
+        "stoploss": "market",
         "stoploss_on_exchange": false,
         "stoploss_price_type": "last",
         "stoploss_on_exchange_interval": 60,
