@@ -237,6 +237,13 @@ case "${1:-}" in
     "mainnet")
         run_mainnet
         ;;
+    "monitor")
+        monitor_trading
+        ;;
+    "stop")
+        pkill -f "freqtrade trade"
+        print_info "Trading bot stopped."
+        ;;
     "pairlist")
         test_pairlist "testnet"
         ;;
