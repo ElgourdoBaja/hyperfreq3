@@ -100,10 +100,7 @@
             },
             "sandbox": true
         },
-        "pair_whitelist": [
-            "BTC/USDC:USDC", "ETH/USDC:USDC", "SOL/USDC:USDC", "DOGE/USDC:USDC", "AVAX/USDC:USDC",
-            "TRUMP/USDC:USDC", "NEAR/USDC:USDC", "AAVE/USDC:USDC", "JUP/USDC:USDC", "ATOM/USDC:USDC"
-        ],
+        "pair_whitelist": [],
         "pair_blacklist": [],
         "outdated_offset": 5,
         "markets_refresh_interval": 60
