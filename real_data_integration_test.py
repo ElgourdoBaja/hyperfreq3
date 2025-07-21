@@ -80,7 +80,7 @@ class HypertraderAPITester:
 
 def test_real_data_integration():
     """Test real data integration in the API"""
-    backend_url = "https://1341ecb2-a30c-43a3-ad39-cb81c20c3586.preview.emergentagent.com"
+    backend_url = "https://54bf5074-fbbb-49dd-a379-2b55c68d8cb8.preview.emergentagent.com"
     
     print(f"🚀 Testing Hypertrader API Real Data Integration at: {backend_url}")
     tester = HypertraderAPITester(backend_url)

@@ -220,7 +220,7 @@ def validate_coins_list(response_data):
 
 def main():
     # Get backend URL from frontend .env file
-    backend_url = "https://1341ecb2-a30c-43a3-ad39-cb81c20c3586.preview.emergentagent.com"
+    backend_url = "https://54bf5074-fbbb-49dd-a379-2b55c68d8cb8.preview.emergentagent.com"
     
     print(f"Testing Hypertrader 1.5 Real Data API at: {backend_url}")
     tester = HyperliquidRealDataTester(backend_url)
