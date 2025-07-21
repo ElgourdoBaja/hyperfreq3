@@ -104,13 +104,13 @@
     "leverage_tiers": {},
     "leverage": 2,
     "api_server": {
-        "enabled": false,
-        "listen_ip_address": "127.0.0.1",
+        "enabled": true,
+        "listen_ip_address": "0.0.0.0",
         "listen_port": 8080,
-        "verbosity": "error",
-        "enable_openapi": false,
+        "verbosity": "info",
+        "enable_openapi": true,
         "jwt_secret_key": "somethingrandom",
-        "CORS_origins": [],
+        "CORS_origins": ["*"],
         "username": "freqtrader",
         "password": "SuperSecurePassword",
         "ws_token": "secret_ws_t0ken."
