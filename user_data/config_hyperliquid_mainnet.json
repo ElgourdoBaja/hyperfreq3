@@ -110,7 +110,7 @@
         "verbosity": "info",
         "enable_openapi": true,
         "jwt_secret_key": "somethingrandom",
-        "CORS_origins": ["*"],
+        "CORS_origins": ["*", "https://54bf5074-fbbb-49dd-a379-2b55c68d8cb8.preview.emergentagent.com"],
         "username": "freqtrader",
         "password": "SuperSecurePassword",
         "ws_token": "secret_ws_t0ken."
