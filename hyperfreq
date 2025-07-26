@@ -13,8 +13,8 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Directories
-SCRIPT_DIR="/app"
-USER_DATA_DIR="/app/user_data"
+SCRIPT_DIR="/home/ssc/hyperfreq"
+USER_DATA_DIR="/home/ssc/hyperfreq/user_data"
 
 echo -e "${BLUE}==========================================${NC}"
 echo -e "${BLUE}        HyperFreq Management${NC}"
@@ -74,7 +74,7 @@ show_status() {
     
     # Check API connection
     print_info "Testing Hyperliquid API connection..."
-    if python /app/test_hyperliquid_freqtrade.py > /dev/null 2>&1; then
+    if python test_hyperliquid_freqtrade.py > /dev/null 2>&1; then
         print_success "API connection: Working"
     else
         print_warning "API connection: Check credentials"
@@ -86,7 +86,7 @@ show_status() {
 # Function to test connection
 test_connection() {
     print_info "Running Hyperliquid API connection test..."
-    python /app/test_hyperliquid_freqtrade.py
+    python test_hyperliquid_freqtrade.py
 }
 
 # Function to monitor live trading
@@ -100,7 +100,7 @@ monitor_trading() {
         echo
         
         # Show last 20 log entries and follow
-        tail -f "$USER_DATA_DIR/logs/freqtrade.log" 2>/dev/null || tail -f /app/hyperfreq_testnet.log
+        tail -f "$USER_DATA_DIR/logs/freqtrade.log" 2>/dev/null || tail -f /home/ssc/hyperfreq/hyperfreq_testnet.log
     else
         print_error "HyperFreq is not currently running"
         print_info "Start trading with: ./hyperfreq testnet"
@@ -116,7 +116,7 @@ run_testnet() {
     echo
     
     cd "$SCRIPT_DIR"
-    freqtrade trade --config "$USER_DATA_DIR/config_hyperliquid_testnet.json" --verbosity 2
+    freqtrade trade --config "$USER_DATA_DIR/config_hyperliquid_testnet.json"
 }
 
 # Function to run mainnet
@@ -138,7 +138,7 @@ run_mainnet() {
     echo
     
     cd "$SCRIPT_DIR"
-    freqtrade trade --config "$USER_DATA_DIR/config_hyperliquid_mainnet.json" --verbosity 2
+    freqtrade trade --config "$USER_DATA_DIR/config_hyperliquid_mainnet.json"
 }
 
 # Function to test pairlist
